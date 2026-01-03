@@ -115,38 +115,17 @@ function ProvidersPage() {
     toast.success('Provider added successfully')
   }
 
-  // Get per-account usage data for a specific provider
   const getProviderUsageByAccount = (provider: AuthFile) => {
-    if (!usageData?.usage?.apis) return undefined
+    if (!usageData?.by_provider) return undefined
 
     const providerKey = provider.provider?.toLowerCase()
-    const apiUsage = usageData.usage.apis[providerKey]
-    if (!apiUsage?.models) return undefined
+    const apiUsage = usageData.by_provider[providerKey]
+    if (!apiUsage) return undefined
 
-    // Get the account identifier (email or auth_index)
-    const accountEmail = provider.email?.toLowerCase()
-    const authIndex = provider.auth_index
-
-    let totalRequests = 0
-    let totalTokens = 0
-
-    // Iterate through all models and sum up usage for this account
-    for (const modelUsage of Object.values(apiUsage.models)) {
-      if (modelUsage.details) {
-        for (const detail of modelUsage.details) {
-          // Match by email OR auth_index
-          const matchByEmail = accountEmail && detail.source?.toLowerCase() === accountEmail
-          const matchByIndex = authIndex !== undefined && detail.auth_index === authIndex
-
-          if (matchByEmail || matchByIndex) {
-            totalRequests++
-            totalTokens += detail.tokens?.total_tokens || 0
-          }
-        }
-      }
+    return {
+      total_requests: apiUsage.requests,
+      total_tokens: apiUsage.tokens.total,
     }
-
-    return totalRequests > 0 ? { total_requests: totalRequests, total_tokens: totalTokens } : undefined
   }
 
   const totalProviders = authFilesData?.files.length || 0
@@ -281,8 +260,8 @@ function ProvidersPage() {
       {/* Loading State */}
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-                <ProviderCardSkeleton key={i} />
+            {['a', 'b', 'c', 'd', 'e', 'f'].map((id) => (
+                <ProviderCardSkeleton key={id} />
             ))}
         </div>
       )}

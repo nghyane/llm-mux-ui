@@ -54,13 +54,13 @@ function ModelsPage() {
       if (!providerKey) continue
 
       // Use existing status or determine from auth status
-      if (file.unavailable || file.status === 'error') {
+      if (file.unavailable || file.status === 'error' || file.status === 'unavailable') {
         statuses[providerKey] = 'error'
-      } else if (file.status === 'expired' || file.disabled) {
+      } else if (file.status === 'disabled' || file.status === 'cooling' || file.disabled) {
         if (!statuses[providerKey] || statuses[providerKey] === 'active') {
           statuses[providerKey] = 'degraded'
         }
-      } else if (file.status === 'ok' || file.status === 'active' || file.status === 'connected') {
+      } else if (file.status === 'active') {
         if (!statuses[providerKey]) {
           statuses[providerKey] = 'active'
         }
@@ -69,48 +69,30 @@ function ModelsPage() {
     return statuses
   }, [authData])
 
-  // Transform API data into flat model list
   const allModels = useMemo((): ModelItem[] => {
-    if (!usageData?.usage?.apis) return []
+    if (!usageData?.by_model) return []
 
     const models: ModelItem[] = []
 
-    for (const [providerKey, apiUsage] of Object.entries(usageData.usage.apis)) {
-      if (!apiUsage.models) continue
-
+    for (const [modelKey, modelUsage] of Object.entries(usageData.by_model)) {
+      const providerKey = modelUsage.provider
       const providerConfig = getProviderConfig(providerKey)
       const providerStatus = providerStatuses[providerKey.toLowerCase()] || 'active'
+      
+      const modelStatus: 'active' | 'degraded' | 'error' = providerStatus
 
-      for (const [modelName, modelUsage] of Object.entries(apiUsage.models)) {
-        // Count failed requests from details if available
-        const failedRequests = modelUsage.details?.filter(d => d.failed).length || 0
-        const totalRequests = modelUsage.total_requests || 0
-
-        // Determine model status based on failure rate and provider status
-        let modelStatus: 'active' | 'degraded' | 'error' = providerStatus
-        if (totalRequests > 0) {
-          const failureRate = failedRequests / totalRequests
-          if (failureRate > 0.5) {
-            modelStatus = 'error'
-          } else if (failureRate > 0.1) {
-            modelStatus = 'degraded'
-          }
-        }
-
-        models.push({
-          id: `${providerKey}_${modelName}`.replace(/[^a-zA-Z0-9_-]/g, '_'),
-          name: modelName,
-          provider: providerKey,
-          providerDisplayName: providerConfig.name,
-          status: modelStatus,
-          requests: totalRequests,
-          tokens: modelUsage.total_tokens || 0,
-          failedRequests,
-        })
-      }
+      models.push({
+        id: `${providerKey}_${modelKey}`.replace(/[^a-zA-Z0-9_-]/g, '_'),
+        name: modelKey,
+        provider: providerKey,
+        providerDisplayName: providerConfig.name,
+        status: modelStatus,
+        requests: modelUsage.requests,
+        tokens: modelUsage.tokens.total,
+        failedRequests: modelUsage.failure,
+      })
     }
 
-    // Sort by requests descending
     return models.sort((a, b) => b.requests - a.requests)
   }, [usageData, providerStatuses])
 
@@ -212,6 +194,7 @@ function ModelsPage() {
               </p>
             </div>
             <button
+              type="button"
               onClick={() => refetch()}
               className="text-xs font-medium text-(--danger-text) hover:underline"
             >
@@ -251,12 +234,14 @@ function ModelsPage() {
             />
             <div className="flex border border-(--border-color) rounded-lg overflow-hidden">
               <button
+                type="button"
                 onClick={() => setViewMode('list')}
                 className={`p-2 ${viewMode === 'list' ? 'bg-(--bg-card)' : 'hover:bg-(--bg-hover)'} border-r border-(--border-color)`}
               >
                 <Icon name="view_list" size="md" className={viewMode === 'list' ? 'text-(--text-primary)' : 'text-(--text-tertiary)'} />
               </button>
               <button
+                type="button"
                 onClick={() => setViewMode('grid')}
                 className={`p-2 ${viewMode === 'grid' ? 'bg-(--bg-card)' : 'hover:bg-(--bg-hover)'}`}
               >
@@ -379,7 +364,7 @@ function ModelsPage() {
                       </TableCell>
                       <TableCell align="right">
                         <Link to="/analytics" search={{ model: model.name }}>
-                          <button className="p-1 hover:bg-(--bg-hover) rounded text-(--text-tertiary) hover:text-(--text-primary)">
+                          <button type="button" className="p-1 hover:bg-(--bg-hover) rounded text-(--text-tertiary) hover:text-(--text-primary)">
                             <Icon name="analytics" size="md" />
                           </button>
                         </Link>
