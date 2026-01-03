@@ -1,7 +1,9 @@
 import { createRootRoute, Outlet, useRouterState } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import { Sidebar } from '../components/layout/Sidebar'
 import { Header } from '../components/layout/Header'
+import { MobileNav } from '../components/layout/MobileNav'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { ApiSetupScreen } from '../components/features/settings/ApiSetupScreen'
 import { useApiConfigContext } from '../context/ApiConfigContext'
@@ -14,8 +16,16 @@ function RootLayout() {
   const routerState = useRouterState()
   const currentPath = routerState.location.pathname
   const { isConfigured, saveConfig, testConnection } = useApiConfigContext()
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  
+  const mainContentId = 'main-content'
 
-  // If not configured, show the mandatory setup screen
+  useEffect(() => {
+    if (currentPath) {
+      setIsMobileNavOpen(false)
+    }
+  }, [currentPath])
+
   if (!isConfigured) {
     return (
       <ApiSetupScreen
@@ -25,30 +35,26 @@ function RootLayout() {
     )
   }
 
-  // Once configured, show the normal app layout
   return (
     <ErrorBoundary>
       <div className="h-screen flex overflow-hidden antialiased">
-        {/* Skip to main content link for keyboard users */}
         <a
-          href="#main-content"
+          href={`#${mainContentId}`}
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-(--bg-card) focus:border focus:border-(--border-color) focus:rounded-md focus:text-(--text-primary)"
         >
           Skip to main content
         </a>
 
-        {/* Sidebar */}
         <Sidebar />
 
-        {/* Main content area */}
-        <main
-          id="main-content"
-          className="flex-1 flex flex-col h-full overflow-hidden relative bg-(--bg-body)"
-        >
-          {/* Header */}
-          <Header />
+        <MobileNav isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
 
-          {/* Page content - simple fade in on route change */}
+        <main
+          id={mainContentId}
+          className="flex-1 flex flex-col h-full overflow-hidden relative bg-(--bg-muted) bg-pattern"
+        >
+          <Header onOpenMobileNav={() => setIsMobileNavOpen(true)} />
+
           <div className="flex-1 overflow-y-auto p-6 lg:p-10">
             <motion.div
               key={currentPath}
