@@ -199,7 +199,7 @@ function AnalyticsPage() {
   const renderProviders = () => (
     <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="p-6 border-b border-(--border-color)">
-        <h3 className="text-lg font-semibold text-(--text-primary)">Provider Performance</h3>
+        <h3 className="text-base font-semibold text-(--text-primary)">Provider Performance</h3>
         <p className="text-sm text-(--text-secondary)">Detailed breakdown by provider</p>
       </div>
       {isLoading ? (
@@ -237,9 +237,9 @@ function AnalyticsPage() {
                   <TableCell align="right" className="font-mono">{formatNumber(provider.requests)}</TableCell>
                   <TableCell align="right">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                      successRate >= 99 ? 'bg-emerald-500/10 text-emerald-500' : 
-                      successRate >= 95 ? 'bg-yellow-500/10 text-yellow-500' : 
-                      'bg-red-500/10 text-red-500'
+                      successRate >= 99 ? 'bg-(--success-bg) text-(--success-text)' : 
+                      successRate >= 95 ? 'bg-(--warning-bg) text-(--warning-text)' : 
+                      'bg-(--danger-bg) text-(--danger-text)'
                     }`}>
                       {successRate.toFixed(1)}%
                     </span>
@@ -310,10 +310,10 @@ function AnalyticsPage() {
     <div className="space-y-8 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-(--text-primary)">
+          <h2 className="text-2xl font-semibold tracking-tight text-(--text-primary)">
             Analytics
           </h2>
-          <p className="text-(--text-secondary) mt-1">
+          <p className="text-(--text-secondary) mt-1 text-sm">
             Monitor traffic, token usage, and performance metrics.
           </p>
         </div>
@@ -412,7 +412,7 @@ interface AnalyticsStatCardProps {
 function AnalyticsStatCard({ label, value, icon, isLoading, highlight, variant = 'default' }: AnalyticsStatCardProps) {
   if (isLoading) {
     return (
-      <Card className="p-5">
+      <Card className="p-6">
         <div className="flex items-center justify-between mb-3">
           <div className="h-4 w-24 bg-(--bg-hover) rounded animate-pulse" />
           <div className="p-2 rounded-lg bg-(--bg-hover)">
@@ -425,21 +425,21 @@ function AnalyticsStatCard({ label, value, icon, isLoading, highlight, variant =
   }
 
   return (
-    <Card className="p-5 relative overflow-hidden group">
+    <Card className="p-6 relative overflow-hidden group">
        <div className="absolute inset-0 bg-gradient-to-br from-transparent to-(--bg-hover)/30 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <div className="flex items-center justify-between mb-3 relative z-10">
         <p className="text-sm font-medium text-(--text-secondary)">{label}</p>
         <div className={`p-2 rounded-lg transition-colors ${
-          highlight ? 'bg-emerald-500/10' : 
-          variant === 'danger' ? 'bg-red-500/10' : 
+          highlight ? 'bg-(--success-bg)' : 
+          variant === 'danger' ? 'bg-(--danger-bg)' : 
           'bg-(--bg-hover)'
         }`}>
           <Icon
             name={icon}
             size="md"
             className={
-              highlight ? 'text-emerald-500' : 
-              variant === 'danger' ? 'text-red-500' : 
+              highlight ? 'text-(--success-text)' : 
+              variant === 'danger' ? 'text-(--danger-text)' : 
               'text-(--text-tertiary)'
             }
           />
@@ -447,7 +447,7 @@ function AnalyticsStatCard({ label, value, icon, isLoading, highlight, variant =
       </div>
       <div className="flex items-end justify-between relative z-10">
         <span className={`text-3xl font-bold tracking-tight ${
-          variant === 'danger' && value !== '0' ? 'text-red-500' : 'text-(--text-primary)'
+          variant === 'danger' && value !== '0' ? 'text-(--danger-text)' : 'text-(--text-primary)'
         }`}>
           {value}
         </span>

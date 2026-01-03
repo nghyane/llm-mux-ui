@@ -49,7 +49,7 @@ export function Header({ onOpenMobileNav }: HeaderProps) {
           aria-label="Notifications"
         >
           <Icon name="notifications" size="lg" />
-          <span className="absolute top-1.5 right-1.5 size-2 bg-red-500 rounded-full border border-(--bg-body)" aria-hidden="true" />
+          <span className="absolute top-1.5 right-1.5 size-2 bg-(--danger-text) rounded-full border border-(--bg-body)" aria-hidden="true" />
         </button>
 
         <div className="h-4 w-px bg-(--border-color)" />

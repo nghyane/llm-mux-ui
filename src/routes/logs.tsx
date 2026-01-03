@@ -247,7 +247,7 @@ function LogsPage() {
               active={levelFilter === 'info'}
               onClick={() => setLevelFilter('info')}
               count={logCounts.info}
-              className="text-blue-400"
+              className="text-(--info-text)"
             >
               Info
             </FilterButton>
@@ -276,7 +276,7 @@ function LogsPage() {
         <div className="p-4 border-b border-(--border-color) flex items-center justify-between">
           <div className="flex items-center gap-2">
             {!isPaused && (
-              <div className="size-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="size-2 rounded-full bg-(--success-text) animate-pulse" />
             )}
             <span className="text-sm text-(--text-secondary)">
               {isPaused ? 'Paused' : 'Live'} ({filteredLogs.length} entries)
@@ -445,7 +445,7 @@ interface LogLineProps {
 function LogLine({ timestamp, level, message }: LogLineProps) {
   const levelColors = {
     all: 'text-(--text-secondary)',
-    info: 'text-blue-400',
+    info: 'text-(--info-text)',
     warning: 'text-(--warning-text)',
     error: 'text-(--danger-text)',
   }

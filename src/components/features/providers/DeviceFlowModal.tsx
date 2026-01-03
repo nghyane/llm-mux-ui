@@ -8,11 +8,12 @@ import { Button } from '../../ui/Button'
 import { Icon } from '../../ui/Icon'
 import { cn } from '../../../lib/cn'
 import { useToast } from '../../../context/ToastContext'
+import type { DeviceFlowProvider } from '../../../api/types'
 
 interface DeviceFlowModalProps {
   isOpen: boolean
   onClose: () => void
-  provider: 'qwen' | 'copilot'
+  provider: DeviceFlowProvider
   userCode: string
   verificationUrl: string
   expiresIn: number
@@ -22,10 +23,11 @@ interface DeviceFlowModalProps {
   error?: string
 }
 
-const PROVIDER_INFO = {
+const PROVIDER_INFO: Record<DeviceFlowProvider, { name: string; icon: string }> = {
   qwen: { name: 'Qwen', icon: 'smart_toy' },
   copilot: { name: 'GitHub Copilot', icon: 'code' },
-} as const
+  'github-copilot': { name: 'GitHub Copilot', icon: 'code' },
+}
 
 export function DeviceFlowModal({
   isOpen,
@@ -108,9 +110,9 @@ export function DeviceFlowModal({
 
   const getTimerColor = () => {
     const percent = (timeRemaining / expiresIn) * 100
-    if (percent < 10) return 'text-red-500'
-    if (percent < 25) return 'text-orange-500'
-    if (percent < 50) return 'text-yellow-600'
+    if (percent < 10) return 'text-(--danger-text)'
+    if (percent < 25) return 'text-(--warning-text)'
+    if (percent < 50) return 'text-(--warning-text)'
     return 'text-(--text-primary)'
   }
 
@@ -253,8 +255,8 @@ export function DeviceFlowModal({
         {status === 'success' && (
           <>
             <div className="py-8 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/10 rounded-full mb-4">
-                <Icon name="check_circle" size="xl" className="text-green-500" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-(--success-bg) rounded-full mb-4">
+                <Icon name="check_circle" size="xl" className="text-(--success-text)" />
               </div>
               <h3 className="text-lg font-semibold text-(--text-primary) mb-2">
                 Authorization Successful!
@@ -297,8 +299,8 @@ export function DeviceFlowModal({
         {status === 'expired' && (
           <>
             <div className="py-8 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500/10 rounded-full mb-4">
-                <Icon name="schedule" size="xl" className="text-orange-500" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-(--warning-bg) rounded-full mb-4">
+                <Icon name="schedule" size="xl" className="text-(--warning-text)" />
               </div>
               <h3 className="text-lg font-semibold text-(--text-primary) mb-2">Code Expired</h3>
               <p className="text-sm text-(--text-secondary)">Please try again.</p>

@@ -15,7 +15,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   danger: 'bg-(--danger-bg) text-(--danger-text)',
   warning: 'bg-(--warning-bg) text-(--warning-text)',
   default: 'bg-(--bg-hover) text-(--text-secondary) border border-(--border-color)/50',
-  info: 'bg-blue-500/10 text-blue-500',
+  info: 'bg-(--info-bg) text-(--info-text)',
 }
 
 const dotStyles: Record<BadgeVariant, string> = {
@@ -23,7 +23,7 @@ const dotStyles: Record<BadgeVariant, string> = {
   danger: 'bg-(--danger-text)',
   warning: 'bg-(--warning-text)',
   default: 'bg-(--text-secondary)',
-  info: 'bg-blue-500',
+  info: 'bg-(--info-text)',
 }
 
 export function Badge({ variant = 'default', children, className, dot = false, pulse = false }: BadgeProps) {
@@ -72,9 +72,9 @@ export function StatusBadge({ status }: { status: 'connected' | 'error' | 'expir
 export function MethodBadge({ method }: { method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' }) {
   const styles: Record<string, string> = {
     GET: 'bg-(--success-bg) text-(--success-text) border-(--success-bg)',
-    POST: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    PUT: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-    PATCH: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+    POST: 'bg-(--info-bg) text-(--info-text) border-(--info-bg)',
+    PUT: 'bg-(--warning-bg) text-(--warning-text) border-(--warning-bg)',
+    PATCH: 'bg-(--warning-bg) text-(--warning-text) border-(--warning-bg)',
     DELETE: 'bg-(--danger-bg) text-(--danger-text) border-(--danger-bg)',
   }
 
