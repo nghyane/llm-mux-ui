@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 
 import { useAuthFiles, useDeleteAuthFile } from '../api/hooks/useAuthFiles'
+import { useProviders } from '../api/hooks/useProviders'
 import { useUsageStats } from '../api/hooks/useUsage'
 import type { AuthFile } from '../api/types'
 import { AddProviderModal } from '../components/features/providers/AddProviderModal'
@@ -10,9 +11,12 @@ import { ProviderCardSkeleton } from '../components/features/providers/ProviderC
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { EmptyState } from '../components/ui/EmptyState'
 import { Icon } from '../components/ui/Icon'
 import { Input } from '../components/ui/Input'
+import { Tabs } from '../components/ui/Tabs'
 import { useToast } from '../context/ToastContext'
+import { formatNumber } from '../lib/utils'
 
 export const Route = createFileRoute('/providers')({
   component: ProvidersPage,
@@ -20,6 +24,7 @@ export const Route = createFileRoute('/providers')({
 
 function ProvidersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'providers' | 'oauth'>('oauth')
   const [searchQuery, setSearchQuery] = useState('')
   const [isRefreshingAll, setIsRefreshingAll] = useState(false)
   const [refreshingCardId, setRefreshingCardId] = useState<string | null>(null)
@@ -28,6 +33,7 @@ function ProvidersPage() {
 
   // Fetch auth files and usage stats
   const { data: authFilesData, isLoading, error: authError, refetch } = useAuthFiles()
+  const { data: providersData, isLoading: providersLoading } = useProviders()
   const { data: usageData } = useUsageStats()
   const deleteAuthFile = useDeleteAuthFile()
 
@@ -128,6 +134,17 @@ function ProvidersPage() {
     }
   }
 
+  const getApiProviderUsage = (providerType: string) => {
+    if (!usageData?.by_provider) return undefined
+    const usage = usageData.by_provider[providerType.toLowerCase()]
+    if (!usage) return undefined
+    return {
+      requests: usage.requests,
+      tokens: usage.tokens.total,
+      success_rate: usage.requests > 0 ? (usage.success / usage.requests) * 100 : 0,
+    }
+  }
+
   const totalProviders = authFilesData?.files.length || 0
   const activeCount = groupedProviders.active.length
   const errorCount = groupedProviders.errors.length
@@ -150,8 +167,102 @@ function ProvidersPage() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <Tabs
+        tabs={[
+          { id: 'oauth', label: 'OAuth Accounts', icon: 'account_circle' },
+          { id: 'providers', label: 'API Providers', icon: 'key' },
+        ]}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id as 'providers' | 'oauth')}
+      />
+
+      {activeTab === 'providers' && (
+        <div className="space-y-6">
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Icon name="info" className="text-(--text-tertiary)" />
+              <p className="text-sm text-(--text-secondary)">
+                Configure API key-based providers. These are direct API connections without OAuth.
+              </p>
+            </div>
+            {providersLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2].map((i) => (
+                  <ProviderCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : !providersData?.providers?.length ? (
+              <EmptyState
+                icon="key"
+                title="No API providers configured"
+                description="Add providers with API keys in your configuration."
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {providersData.providers.map((provider, idx) => (
+                  <Card key={provider.name || idx} className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="size-10 rounded-lg bg-(--bg-hover) flex items-center justify-center">
+                        <Icon name="key" className="text-(--text-secondary)" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-(--text-primary)">{provider.name}</p>
+                        <p className="text-xs text-(--text-tertiary)">{provider.type}</p>
+                      </div>
+                      <Badge
+                        variant={provider.enabled !== false ? 'success' : 'default'}
+                      >
+                        {provider.enabled !== false ? 'Active' : 'Disabled'}
+                      </Badge>
+                    </div>
+                    {(() => {
+                      const usage = getApiProviderUsage(provider.type)
+                      if (!usage) return null
+                      return (
+                        <div className="flex items-center gap-4 pt-3 border-t border-(--border-color)">
+                          <div className="flex items-center gap-1.5">
+                            <Icon name="data_usage" size="sm" className="text-(--text-tertiary)" />
+                            <span className="text-xs text-(--text-secondary)">
+                              {formatNumber(usage.requests)} requests
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Icon name="token" size="sm" className="text-(--text-tertiary)" />
+                            <span className="text-xs text-(--text-secondary)">
+                              {formatNumber(usage.tokens)} tokens
+                            </span>
+                          </div>
+                          {usage.success_rate > 0 && (
+                            <div className="flex items-center gap-1.5 ml-auto">
+                              <Icon
+                                name="check_circle"
+                                size="sm"
+                                className={
+                                  usage.success_rate >= 99
+                                    ? 'text-(--success-text)'
+                                    : 'text-(--text-tertiary)'
+                                }
+                              />
+                              <span className="text-xs text-(--text-secondary)">
+                                {usage.success_rate.toFixed(1)}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {activeTab === 'oauth' && (
+        <div className="space-y-8">
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -363,20 +474,22 @@ function ProvidersPage() {
         </section>
       )}
 
-      {/* No Search Results */}
-      {!isLoading && !authError && totalProviders > 0 && groupedProviders.all.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12">
-          <Icon name="search_off" size="xl" className="text-(--text-secondary) mb-3" />
-          <h3 className="text-lg font-semibold text-(--text-primary) mb-2">
-            No providers found
-          </h3>
-          <p className="text-sm text-(--text-secondary) mb-4">
-            Try adjusting your search query
-          </p>
-          <Button variant="ghost" onClick={() => setSearchQuery('')}>
-            <Icon name="clear" size="sm" />
-            Clear Search
-          </Button>
+          {/* No Search Results */}
+          {!isLoading && !authError && totalProviders > 0 && groupedProviders.all.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Icon name="search_off" size="xl" className="text-(--text-secondary) mb-3" />
+              <h3 className="text-lg font-semibold text-(--text-primary) mb-2">
+                No providers found
+              </h3>
+              <p className="text-sm text-(--text-secondary) mb-4">
+                Try adjusting your search query
+              </p>
+              <Button variant="ghost" onClick={() => setSearchQuery('')}>
+                <Icon name="clear" size="sm" />
+                Clear Search
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
