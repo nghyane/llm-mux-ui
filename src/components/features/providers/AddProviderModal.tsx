@@ -4,22 +4,13 @@ import { Icon } from '../../ui/Icon'
 import { Input } from '../../ui/Input'
 import { Button } from '../../ui/Button'
 import { useToast } from '../../../context/ToastContext'
-import { ALL_PROVIDERS, getProviderConfig } from '../../../lib/providers'
+import { ALL_PROVIDERS, getProviderConfig, getProviderLogoUrl } from '../../../lib/providers'
 import { cn } from '../../../lib/cn'
 
 // API Hooks
-import {
-  useReplaceGeminiKeys,
-  useReplaceClaudeKeys,
-  useReplaceCodexKeys,
-  useReplaceOpenAICompatibility,
-  useGeminiKeys,
-  useClaudeKeys,
-  useCodexKeys,
-  useOpenAICompatibility,
-} from '../../../api/hooks/useApiKeys'
+import { useAddProvider } from '../../../api/hooks/useProviders'
 import { useUploadAuthFile, useImportVertex } from '../../../api/hooks/useAuthFiles'
-import type { GeminiKey, ClaudeKey, CodexKey, OpenAICompatibility, OAuthProvider, DeviceFlowProvider } from '../../../api/types'
+import type { Provider, OAuthProvider, DeviceFlowProvider } from '../../../api/types'
 
 // OAuth Logic
 import { useOAuthFlow } from '../../../api/hooks/useOAuth'
@@ -32,21 +23,22 @@ import { ApiKeyForm } from './ApiKeyForm'
 const ProviderLogo = ({ providerKey, fallbackIcon, className }: { providerKey: string, fallbackIcon: string, className?: string }) => {
   const config = getProviderConfig(providerKey)
   const [hasError, setHasError] = useState(false)
+  const logoUrl = getProviderLogoUrl(config.providerIdForLogo)
   
   return (
     <div className={cn(
-      "flex items-center justify-center overflow-hidden shrink-0 bg-white border border-(--border-color)", 
+      "flex items-center justify-center overflow-hidden shrink-0 bg-(--bg-logo-container) border border-(--border-color)", 
       className || "size-10 rounded-lg"
     )}>
-      {config.logoUrl && !hasError ? (
+      {!hasError ? (
         <img 
-          src={config.logoUrl} 
+          src={logoUrl} 
           alt={config.name} 
           className="h-2/3 w-2/3 object-contain"
           onError={() => setHasError(true)}
         />
       ) : (
-        <Icon name={fallbackIcon} size="md" className="text-zinc-500" />
+        <Icon name={fallbackIcon} size="md" className="text-(--text-tertiary)" />
       )}
     </div>
   )
@@ -74,7 +66,7 @@ const OAuthView = ({ provider, onSuccess, brandColor }: { provider: OAuthProvide
       
       <Button 
         size="lg" 
-        className="w-full max-w-xs text-white hover:opacity-90 transition-opacity"
+        className="w-full max-w-xs text-(--accent-primary-fg) hover:opacity-90 transition-opacity"
         style={{ backgroundColor: brandColor }}
         onClick={() => oauth.startFlow(provider)}
         disabled={oauth.isLoading}
@@ -137,7 +129,7 @@ const DeviceFlowView = ({ provider, onSuccess, brandColor }: { provider: DeviceF
         </p>
         <Button 
           onClick={deviceFlow.retry}
-          style={{ backgroundColor: brandColor, color: '#fff' }}
+          style={{ backgroundColor: brandColor, color: 'var(--accent-primary-fg)' }}
         >
           <Icon name="refresh" className="mr-2" />
           Try Again
@@ -154,7 +146,7 @@ const DeviceFlowView = ({ provider, onSuccess, brandColor }: { provider: DeviceF
       </div>
 
       <div className="flex-1 space-y-6">
-        <div className="bg-(--bg-secondary)/30 p-5 rounded-xl border border-(--border-color)">
+        <div className="p-5 rounded-xl border border-(--border-color)">
           <div className="flex justify-between items-center mb-3">
             <span className="text-xs font-bold text-(--text-secondary) uppercase tracking-wider">Step 1: Copy Code</span>
           </div>
@@ -177,10 +169,10 @@ const DeviceFlowView = ({ provider, onSuccess, brandColor }: { provider: DeviceF
           </button>
         </div>
 
-        <div className="bg-(--bg-secondary)/30 p-5 rounded-xl border border-(--border-color)">
+        <div className="p-5 rounded-xl border border-(--border-color)">
           <span className="text-xs font-bold text-(--text-secondary) uppercase tracking-wider block mb-3">Step 2: Authorize</span>
           <Button 
-            className="w-full h-12 text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all font-medium text-base"
+            className="w-full h-12 text-(--accent-primary-fg) shadow-md hover:shadow-lg hover:opacity-90 transition-all font-medium text-base"
             style={{ backgroundColor: brandColor }}
             onClick={() => window.open(deviceFlow.verificationUrl || '', '_blank')}
           >
@@ -233,14 +225,14 @@ const CookieView = ({ onSuccess }: { onSuccess: () => void }) => {
           </label>
           <textarea
             id={inputId}
-            className="w-full h-32 p-3 rounded-lg bg-(--bg-card) border border-(--border-color) text-sm font-mono focus:ring-2 focus:ring-(--accent-primary) outline-none resize-none"
+            className="w-full h-32 p-3 rounded-lg bg-(--bg-card) border border-(--border-color) text-sm font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--ring) focus-visible:ring-offset-2 resize-none"
             placeholder="Paste cookie string..."
             value={cookie}
             onChange={(e) => setCookie(e.target.value)}
           />
         </div>
         
-        <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-lg text-xs flex gap-2 items-start">
+        <div className="bg-(--warning-bg) text-(--warning-text) p-3 rounded-lg text-xs flex gap-2 items-start">
           <div className="mt-0.5"><Icon name="info" size="sm" /></div>
           <p>
             Copy cookie from DevTools (F12) → Application → Cookies on iFlow platform.
@@ -266,7 +258,9 @@ const FileUploadView = ({ onSuccess }: { onSuccess: () => void }) => {
     try {
       const fileName = file.name.toLowerCase()
       if (fileName.includes('vertex') || fileName.includes('service-account')) {
-        await importVertex.mutateAsync({ file })
+        const text = await file.text()
+        const credentials = JSON.parse(text) as Record<string, unknown>
+        await importVertex.mutateAsync({ credentials })
       } else {
         await uploadAuthFile.mutateAsync(file)
       }
@@ -282,7 +276,7 @@ const FileUploadView = ({ onSuccess }: { onSuccess: () => void }) => {
       <button 
         type="button"
         className={cn(
-          "w-full max-w-sm aspect-square max-h-[300px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-(--accent-primary)",
+          "w-full max-w-sm aspect-square max-h-[300px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--ring) focus-visible:ring-offset-2",
           dragActive ? "border-(--accent-primary) bg-(--accent-primary)/5" : "border-(--border-color) hover:border-(--text-secondary) hover:bg-(--bg-hover)"
         )}
         onDragEnter={(e) => { e.preventDefault(); setDragActive(true) }}
@@ -294,7 +288,7 @@ const FileUploadView = ({ onSuccess }: { onSuccess: () => void }) => {
         }}
         onClick={() => fileInputRef.current?.click()}
       >
-        <div className="size-16 rounded-full bg-(--bg-secondary) flex items-center justify-center mb-4">
+        <div className="size-16 rounded-full bg-(--bg-muted) flex items-center justify-center mb-4">
           <Icon name="upload_file" size="xl" className="text-(--text-tertiary)" />
         </div>
         <p className="text-sm font-medium text-(--text-primary)">Click to upload</p>
@@ -318,20 +312,8 @@ export function AddProviderModal({ isOpen, onClose, onSuccess }: AddProviderModa
   const [searchQuery, setSearchQuery] = useState('')
   const toast = useToast()
 
-  // API Key Hooks
-  const { data: geminiKeys } = useGeminiKeys()
-  const { data: claudeKeys } = useClaudeKeys()
-  const { data: codexKeys } = useCodexKeys()
-  const { data: openaiCompat } = useOpenAICompatibility()
-
-  const replaceGeminiKeys = useReplaceGeminiKeys()
-  const replaceClaudeKeys = useReplaceClaudeKeys()
-  const replaceCodexKeys = useReplaceCodexKeys()
-  const replaceOpenAICompat = useReplaceOpenAICompatibility()
-
-  const isLoading = 
-    replaceGeminiKeys.isPending || replaceClaudeKeys.isPending || 
-    replaceCodexKeys.isPending || replaceOpenAICompat.isPending
+  const addProvider = useAddProvider()
+  const isLoading = addProvider.isPending
 
   // Reset when closed
   useEffect(() => {
@@ -351,14 +333,10 @@ export function AddProviderModal({ isOpen, onClose, onSuccess }: AddProviderModa
     ALL_PROVIDERS.find(p => p.id === selectedId), 
   [selectedId])
 
-  const handleApiKeySubmit = async (data: GeminiKey | ClaudeKey | CodexKey | OpenAICompatibility, type: string) => {
+  const handleApiKeySubmit = async (provider: Provider) => {
     try {
-      if (type === 'gemini') await replaceGeminiKeys.mutateAsync([...(geminiKeys?.['gemini-api-key'] || []), data as GeminiKey])
-      else if (type === 'claude') await replaceClaudeKeys.mutateAsync([...(claudeKeys?.['claude-api-key'] || []), data as ClaudeKey])
-      else if (type === 'codex') await replaceCodexKeys.mutateAsync([...(codexKeys?.['codex-api-key'] || []), data as CodexKey])
-      else if (type === 'openai-compatible') await replaceOpenAICompat.mutateAsync([...(openaiCompat?.['openai-compatibility'] || []), data as OpenAICompatibility])
-
-      toast.success('API key added successfully')
+      await addProvider.mutateAsync(provider)
+      toast.success('Provider added successfully')
       onSuccess?.()
       onClose()
     } catch (err) {
@@ -371,14 +349,14 @@ export function AddProviderModal({ isOpen, onClose, onSuccess }: AddProviderModa
       <div className="flex h-[550px] w-full bg-(--bg-card)">
         
         {/* LEFT SIDEBAR: LIST */}
-        <div className="w-[40%] min-w-[280px] border-r border-(--border-color) flex flex-col bg-(--bg-secondary)/30">
+        <div className="w-[40%] min-w-[280px] border-r border-(--border-color) flex flex-col bg-(--bg-body)">
           <div className="p-4 border-b border-(--border-color)">
             <Input 
               placeholder="Search providers..." 
               icon="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white dark:bg-black/20"
+              className="bg-(--bg-muted)"
             />
           </div>
           
@@ -418,11 +396,11 @@ export function AddProviderModal({ isOpen, onClose, onSuccess }: AddProviderModa
         </div>
 
         {/* RIGHT CONTENT: CONTEXT AWARE */}
-        <div className="flex-1 relative bg-(--bg-card)">
+        <div className="flex-1 relative bg-(--bg-body)">
           {selectedProvider ? (
             <div className="absolute inset-0 flex flex-col animate-in fade-in duration-200">
               {/* Header */}
-              <div className="p-6 border-b border-(--border-color) flex items-center justify-between bg-(--bg-card)">
+              <div className="p-6 border-b border-(--border-color) flex items-center justify-between bg-(--bg-body)">
                 <div className="flex items-center gap-4">
                   <ProviderLogo providerKey={selectedProvider.providerIdForLogo} fallbackIcon={selectedProvider.icon} className="size-12 rounded-xl shadow-sm" />
                   <div>
@@ -453,14 +431,10 @@ export function AddProviderModal({ isOpen, onClose, onSuccess }: AddProviderModa
                 {selectedProvider.method.type === 'apikey' && (
                   <div className="p-6">
                     <div className="max-w-md mx-auto">
-                      <div className="bg-(--bg-secondary)/30 p-6 rounded-xl border border-(--border-color)">
+                      <div className="p-6 rounded-xl border border-(--border-color)">
                         <ApiKeyForm 
                           type={selectedProvider.method.keyType}
-                          onSubmit={(data) => {
-                            if (selectedProvider.method.type === 'apikey') {
-                              handleApiKeySubmit(data, selectedProvider.method.keyType)
-                            }
-                          }}
+                          onSubmit={handleApiKeySubmit}
                           onCancel={() => {}}
                           isLoading={isLoading}
                         />
@@ -472,7 +446,7 @@ export function AddProviderModal({ isOpen, onClose, onSuccess }: AddProviderModa
             </div>
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 text-(--text-tertiary)">
-              <div className="size-24 rounded-full bg-(--bg-secondary) flex items-center justify-center mb-4">
+              <div className="size-24 rounded-full bg-(--bg-muted) flex items-center justify-center mb-4">
                 <Icon name="hub" size="xl" className="opacity-20" />
               </div>
               <h3 className="text-lg font-medium text-(--text-secondary)">Select a Provider</h3>
