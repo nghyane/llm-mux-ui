@@ -22,7 +22,7 @@ export function Header({ onOpenMobileNav }: HeaderProps) {
   const title = routeTitles[currentPath] || 'Dashboard'
 
   return (
-    <header className="h-16 border-b border-(--border-color) flex items-center justify-between px-4 md:px-6 bg-(--bg-body)/80 backdrop-blur-sm sticky top-0 z-10">
+    <header className="h-16 border-b border-(--border-color) flex items-center justify-between px-4 md:px-6 bg-(--bg-body)/95 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -49,7 +49,7 @@ export function Header({ onOpenMobileNav }: HeaderProps) {
           aria-label="Notifications"
         >
           <Icon name="notifications" size="lg" />
-          <span className="absolute top-1.5 right-1.5 size-2 bg-(--danger-text) rounded-full border border-(--bg-body)" aria-hidden="true" />
+          <span className="absolute top-1.5 right-1.5 size-2 bg-(--danger-text) rounded-full border border-(--bg-surface)" aria-hidden="true" />
         </button>
 
         <div className="h-4 w-px bg-(--border-color)" />

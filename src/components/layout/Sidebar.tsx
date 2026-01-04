@@ -39,7 +39,7 @@ export function Sidebar() {
   return (
     <aside 
       className={cn(
-        "h-full flex flex-col border-r border-(--border-color) bg-(--bg-card) z-20 hidden md:flex transition-all duration-300 relative",
+        "h-full flex flex-col border-r border-(--border-color) bg-(--bg-body) z-20 hidden md:flex transition-all duration-300 relative",
         isCollapsed ? "w-16" : "w-64"
       )}
     >
@@ -141,7 +141,7 @@ export function Sidebar() {
             "flex items-center gap-3 rounded-lg hover:bg-(--bg-hover) transition-colors cursor-pointer group whitespace-nowrap",
             isCollapsed ? "justify-center p-2" : "px-3 py-2"
         )}>
-          <div className="size-8 rounded-full bg-gradient-to-br from-gray-500 to-gray-700 flex-shrink-0" />
+          <div className="size-8 rounded-full bg-(--bg-muted) flex-shrink-0" />
           {!isCollapsed && (
              <motion.div 
                initial={{ opacity: 0 }}
@@ -166,7 +166,7 @@ export function Sidebar() {
       <button
         type="button"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute bottom-4 right-0 translate-x-1/2 size-6 rounded-full bg-(--bg-card) border border-(--border-color) flex items-center justify-center hover:bg-(--bg-hover) transition-colors z-50 shadow-sm text-(--text-secondary)"
+        className="absolute bottom-4 right-0 translate-x-1/2 size-6 rounded-full bg-(--bg-surface) border border-(--border-color) flex items-center justify-center hover:bg-(--bg-hover) transition-colors z-50 shadow-sm text-(--text-secondary)"
       >
         <Icon name={isCollapsed ? 'chevron_right' : 'chevron_left'} size="sm" />
       </button>

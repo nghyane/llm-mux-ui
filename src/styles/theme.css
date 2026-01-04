@@ -1,54 +1,109 @@
 /* LLM-Mux Design System - CSS Variables */
 
 :root {
-  /* Light theme (default fallback) */
-  --bg-body: #ffffff;
-  --bg-surface: #fafafa;
-  --bg-card: #ffffff;
-  --bg-hover: #f5f5f5;
-  --bg-muted: #f4f4f5;
+  --bg-body: #ffffff;           /* PURE WHITE - not gray! */
+  --bg-surface: #ffffff;        /* White sidebar */
+  --bg-card: #ffffff;           /* White cards */
+  --bg-hover: #f4f4f5;          /* Subtle hover */
+  --bg-muted: #f4f4f5;          /* Muted backgrounds */
   --bg-muted-subtle: rgba(244, 244, 245, 0.5);
-  --border-color: #e5e7eb;
-  --border-hover: #d1d5db;
-  --text-primary: #09090b;
-  --text-secondary: #52525b;
-  --text-tertiary: #a1a1aa;
-  --accent-primary: #000000;
+  --bg-secondary: #f4f4f5;
+  --border-color: #e4e4e7;      /* Crisp, light borders */
+  --border-hover: #d4d4d8;
+  --text-primary: #09090b;      /* Zinc-950 for sharp text */
+  --text-secondary: #3f3f46;    /* Zinc-700 - readable */
+  --text-tertiary: #71717a;     /* Zinc-500 */
+  --accent-primary: #18181b;
   --accent-primary-fg: #ffffff;
   --accent-subtle: #f4f4f5;
+  
+  /* Keep semantic colors */
   --success-bg: #dcfce7;
   --success-text: #166534;
   --danger-bg: #fee2e2;
-  --danger-text: #991b1b;
-  --warning-bg: #fef9c3;
-  --warning-text: #854d0e;
+  --danger-text: #dc2626;
+  --warning-bg: #fef3c7;
+  --warning-text: #d97706;
   --info-bg: #dbeafe;
-  --info-text: #1d4ed8;
+  --info-text: #2563eb;
+
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --primary-hover: #27272a;
+  --bg-logo-container: #ffffff;
+
+  /* Surfaces - all white, rely on borders */
+  --surface-0: #ffffff;
+  --surface-1: #ffffff;
+  --surface-2: #ffffff;
+  --surface-3: #ffffff;
+  --shadow-surface-1: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-surface-2: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+  --shadow-surface-3: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+
+  --bg-active: #e4e4e7;
+  --bg-selected: #f4f4f5;
+  --border-focus: #18181b;
+  --ring-offset: #ffffff;
+  --ring: #18181b;
+
+  --chart-primary: #18181b;
+  --chart-secondary: #6366f1;
+  --chart-tertiary: #06b6d4;
+  --chart-quaternary: #f59e0b;
+  --chart-quinary: #10b981;
 }
 
 .dark {
-  --bg-body: #0a0a0a;
-  --bg-surface: #000000;
-  --bg-card: #111111;
-  --bg-hover: #1a1a1a;
+  --bg-body: #09090b;           /* Zinc-950 */
+  --bg-surface: #09090b;
+  --bg-card: #09090b;
+  --bg-hover: #18181b;
   --bg-muted: #18181b;
   --bg-muted-subtle: rgba(24, 24, 27, 0.5);
+  --bg-secondary: #18181b;
   --border-color: #27272a;
   --border-hover: #3f3f46;
-  --text-primary: #ededed;
+  --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  --text-tertiary: #52525b;
-  --accent-primary: #ededed;
-  --accent-primary-fg: #000000;
+  --text-tertiary: #71717a;
+  --accent-primary: #fafafa;
+  --accent-primary-fg: #18181b;
   --accent-subtle: #27272a;
-  --success-bg: rgba(34, 197, 94, 0.1);
+
+  --success-bg: rgba(34, 197, 94, 0.15);
   --success-text: #4ade80;
-  --danger-bg: rgba(239, 68, 68, 0.1);
+  --danger-bg: rgba(239, 68, 68, 0.15);
   --danger-text: #f87171;
-  --warning-bg: rgba(234, 179, 8, 0.1);
-  --warning-text: #facc15;
-  --info-bg: rgba(59, 130, 246, 0.1);
+  --warning-bg: rgba(234, 179, 8, 0.15);
+  --warning-text: #fbbf24;
+  --info-bg: rgba(59, 130, 246, 0.15);
   --info-text: #60a5fa;
+
+  --primary: #fafafa;
+  --primary-foreground: #18181b;
+  --primary-hover: #e4e4e7;
+  --bg-logo-container: #ffffff;
+
+  --surface-0: #09090b;
+  --surface-1: #09090b;
+  --surface-2: #18181b;
+  --surface-3: #27272a;
+  --shadow-surface-1: none;
+  --shadow-surface-2: none;
+  --shadow-surface-3: none;
+
+  --bg-active: #27272a;
+  --bg-selected: #27272a;
+  --border-focus: #fafafa;
+  --ring-offset: #09090b;
+  --ring: #fafafa;
+
+  --chart-primary: #fafafa;
+  --chart-secondary: #818cf8;
+  --chart-tertiary: #22d3ee;
+  --chart-quaternary: #fbbf24;
+  --chart-quinary: #34d399;
 }
 
 /* Scrollbar styling */
@@ -77,13 +132,6 @@
 
 .material-symbols-outlined.filled {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-:root {
-  --ring: var(--accent-primary);
-}
-.dark {
-  --ring: var(--accent-primary);
 }
 
 .bg-pattern {
