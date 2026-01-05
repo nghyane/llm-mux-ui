@@ -1,16 +1,10 @@
-/**
- * Usage statistics endpoints
- */
-
 import { apiClient } from '../client'
-import type { UsageResponse } from '../types'
+import type { UsageStats, UsageQueryParams } from '../types'
 
-/**
- * Usage statistics endpoints
- */
 export const usageApi = {
-  /**
-   * Get usage statistics
-   */
-  getStats: () => apiClient.get<UsageResponse>('/usage'),
+  get: (params?: UsageQueryParams) =>
+    apiClient.get<UsageStats>(
+      '/usage',
+      params as Record<string, string | number | boolean | undefined>
+    ),
 }

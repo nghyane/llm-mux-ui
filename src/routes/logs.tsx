@@ -299,7 +299,7 @@ function LogsPage() {
         </div>
         <div
           ref={logContainerRef}
-          className="p-4 font-mono text-xs bg-black/50 min-h-[400px] max-h-[600px] overflow-auto"
+          className="p-4 font-mono text-xs bg-(--bg-muted) min-h-[400px] max-h-[600px] overflow-auto"
         >
           {showLoading ? (
             <LogSkeleton />
@@ -453,12 +453,12 @@ function LogLine({ timestamp, level, message }: LogLineProps) {
   const levelBgColors = {
     all: '',
     info: '',
-    warning: 'bg-(--warning-bg)/30',
-    error: 'bg-(--danger-bg)/30',
+    warning: 'bg-(--warning-bg)',
+    error: 'bg-(--danger-bg)',
   }
 
   return (
-    <div className={cn('flex gap-4 py-1 px-2 -mx-2 rounded hover:bg-white/5', levelBgColors[level])}>
+    <div className={cn('flex gap-4 py-1 px-2 -mx-2 rounded hover:bg-(--bg-hover)', levelBgColors[level])}>
       {timestamp && (
         <span className="text-(--text-tertiary) shrink-0">{timestamp}</span>
       )}

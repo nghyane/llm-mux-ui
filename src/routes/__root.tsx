@@ -51,7 +51,7 @@ function RootLayout() {
 
         <main
           id={mainContentId}
-          className="flex-1 flex flex-col h-full overflow-hidden relative bg-(--bg-muted) bg-pattern"
+          className="flex-1 flex flex-col h-full overflow-hidden relative bg-(--bg-page)"
         >
           <Header onOpenMobileNav={() => setIsMobileNavOpen(true)} />
 

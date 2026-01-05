@@ -1,52 +1,68 @@
 /* LLM-Mux Design System - CSS Variables */
 
 :root {
-  --bg-body: #ffffff;           /* PURE WHITE - not gray! */
-  --bg-surface: #ffffff;        /* White sidebar */
-  --bg-card: #ffffff;           /* White cards */
-  --bg-hover: #f4f4f5;          /* Subtle hover */
-  --bg-muted: #f4f4f5;          /* Muted backgrounds */
+  /* Background Hierarchy - 4 levels only */
+  --bg-page: #fafafa;
+  --bg-container: #ffffff;
+  --bg-nested: #f4f4f5;
+  --bg-interactive: #e4e4e7;
+  
+  /* Legacy aliases (for compatibility during migration) */
+  --bg-body: var(--bg-page);
+  --bg-surface: var(--bg-container);
+  --bg-card: var(--bg-container);
+  --bg-hover: var(--bg-interactive);
+  --bg-muted: var(--bg-nested);
+  --bg-secondary: var(--bg-nested);
   --bg-muted-subtle: rgba(244, 244, 245, 0.5);
-  --bg-secondary: #f4f4f5;
-  --border-color: #e4e4e7;      /* Crisp, light borders */
-  --border-hover: #d4d4d8;
-  --text-primary: #09090b;      /* Zinc-950 for sharp text */
-  --text-secondary: #3f3f46;    /* Zinc-700 - readable */
-  --text-tertiary: #71717a;     /* Zinc-500 */
-  --accent-primary: #18181b;
-  --accent-primary-fg: #ffffff;
   --accent-subtle: #f4f4f5;
   
-  /* Keep semantic colors */
+  /* Text */
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-tertiary: #a1a1aa;
+  
+  /* Borders */
+  --border-color: #e4e4e7;
+  --border-hover: #d4d4d8;
+  --border-focus: #18181b;
+  
+  /* Accent */
+  --accent-primary: #18181b;
+  --accent-primary-fg: #ffffff;
+  
+  /* Semantic */
   --success-bg: #dcfce7;
-  --success-text: #166534;
+  --success-text: #16a34a;
   --danger-bg: #fee2e2;
   --danger-text: #dc2626;
   --warning-bg: #fef3c7;
   --warning-text: #d97706;
   --info-bg: #dbeafe;
   --info-text: #2563eb;
-
+  
+  /* Brand */
   --primary: #18181b;
   --primary-foreground: #fafafa;
   --primary-hover: #27272a;
   --bg-logo-container: #ffffff;
-
-  /* Surfaces - all white, rely on borders */
-  --surface-0: #ffffff;
-  --surface-1: #ffffff;
-  --surface-2: #ffffff;
-  --surface-3: #ffffff;
-  --shadow-surface-1: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-surface-2: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
-  --shadow-surface-3: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-
-  --bg-active: #e4e4e7;
+  
+  /* Surfaces (simplified) */
+  --surface-0: var(--bg-page);
+  --surface-1: var(--bg-container);
+  --surface-2: var(--bg-container);
+  --surface-3: var(--bg-container);
+  --shadow-surface-1: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-surface-2: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-surface-3: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  /* Interactive */
+  --bg-active: var(--bg-interactive);
   --bg-selected: #f4f4f5;
-  --border-focus: #18181b;
-  --ring-offset: #ffffff;
+  --ring-offset: var(--bg-page);
   --ring: #18181b;
-
+  
+  /* Charts */
   --chart-primary: #18181b;
   --chart-secondary: #6366f1;
   --chart-tertiary: #06b6d4;
@@ -55,22 +71,31 @@
 }
 
 .dark {
-  --bg-body: #09090b;           /* Zinc-950 */
-  --bg-surface: #09090b;
-  --bg-card: #09090b;
-  --bg-hover: #18181b;
-  --bg-muted: #18181b;
+  --bg-page: #09090b;
+  --bg-container: #111111;
+  --bg-nested: #18181b;
+  --bg-interactive: #27272a;
+  
+  --bg-body: var(--bg-page);
+  --bg-surface: var(--bg-container);
+  --bg-card: var(--bg-container);
+  --bg-hover: var(--bg-interactive);
+  --bg-muted: var(--bg-nested);
+  --bg-secondary: var(--bg-nested);
   --bg-muted-subtle: rgba(24, 24, 27, 0.5);
-  --bg-secondary: #18181b;
-  --border-color: #27272a;
-  --border-hover: #3f3f46;
+  --accent-subtle: #27272a;
+  
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
   --text-tertiary: #71717a;
+  
+  --border-color: #27272a;
+  --border-hover: #3f3f46;
+  --border-focus: #fafafa;
+  
   --accent-primary: #fafafa;
   --accent-primary-fg: #18181b;
-  --accent-subtle: #27272a;
-
+  
   --success-bg: rgba(34, 197, 94, 0.15);
   --success-text: #4ade80;
   --danger-bg: rgba(239, 68, 68, 0.15);
@@ -79,26 +104,25 @@
   --warning-text: #fbbf24;
   --info-bg: rgba(59, 130, 246, 0.15);
   --info-text: #60a5fa;
-
+  
   --primary: #fafafa;
   --primary-foreground: #18181b;
   --primary-hover: #e4e4e7;
   --bg-logo-container: #ffffff;
-
-  --surface-0: #09090b;
-  --surface-1: #09090b;
-  --surface-2: #18181b;
-  --surface-3: #27272a;
+  
+  --surface-0: var(--bg-page);
+  --surface-1: var(--bg-container);
+  --surface-2: var(--bg-nested);
+  --surface-3: var(--bg-interactive);
   --shadow-surface-1: none;
   --shadow-surface-2: none;
   --shadow-surface-3: none;
-
-  --bg-active: #27272a;
+  
+  --bg-active: var(--bg-interactive);
   --bg-selected: #27272a;
-  --border-focus: #fafafa;
-  --ring-offset: #09090b;
+  --ring-offset: var(--bg-page);
   --ring: #fafafa;
-
+  
   --chart-primary: #fafafa;
   --chart-secondary: #818cf8;
   --chart-tertiary: #22d3ee;

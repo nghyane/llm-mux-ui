@@ -1,8 +1,5 @@
-/**
- * API endpoints index - exports all endpoint functions
- */
-
 export * from './settings'
+export * from './providers'
 export * from './api-keys'
 export * from './auth-files'
 export * from './oauth'

@@ -10,7 +10,7 @@ import { Icon } from '../components/ui/Icon'
 import { Select } from '../components/ui/Select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table'
 import { Tabs } from '../components/ui/Tabs'
-import { getProviderConfig } from '../lib/providers'
+import { getProviderConfig, getProviderLogoUrl } from '../lib/providers'
 import { formatNumber } from '../lib/utils'
 
 export const Route = createFileRoute('/analytics')({
@@ -225,11 +225,24 @@ function AnalyticsPage() {
                 <TableRow key={provider.name}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div
-                        className="size-8 rounded-lg flex items-center justify-center text-xs font-bold shadow-sm"
-                        style={{ backgroundColor: provider.config.bgColor, color: provider.config.color }}
-                      >
-                         {provider.config.name.substring(0, 2).toUpperCase()}
+                      <div className="size-8 rounded-lg flex items-center justify-center overflow-hidden border border-(--border-color) bg-(--bg-logo-container)">
+                        <img 
+                          src={getProviderLogoUrl(provider.config.providerIdForLogo)} 
+                          alt={provider.config.name}
+                          className="size-5 object-contain"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextElementSibling) {
+                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                        />
+                        <span 
+                          className="hidden size-full items-center justify-center text-xs font-bold"
+                          style={{ backgroundColor: provider.config.bgColor, color: provider.config.color }}
+                        >
+                          {provider.config.name.substring(0, 2).toUpperCase()}
+                        </span>
                       </div>
                       <span className="font-medium text-(--text-primary)">{provider.config.name}</span>
                     </div>

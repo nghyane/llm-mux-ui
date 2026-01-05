@@ -1,4 +1,7 @@
-export { Sidebar } from './Sidebar'
 export { Header } from './Header'
+export { Sidebar } from './Sidebar'
 export { MobileNav } from './MobileNav'
 export { PageTransition } from './PageTransition'
+export { PageHeader } from './PageHeader'
+export { PageContent } from './PageContent'
+export { PageSection } from './PageSection'

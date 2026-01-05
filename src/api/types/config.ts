@@ -1,12 +1,5 @@
-/**
- * Configuration types
- */
+import type { Provider } from './providers'
 
-import type { ClaudeKey, CodexKey, GeminiKey, OpenAICompatibility } from './api-keys'
-
-/**
- * Full server configuration
- */
 export interface Config {
   port?: number
   'auth-dir'?: string
@@ -18,23 +11,16 @@ export interface Config {
   'max-retry-interval'?: number
   'ws-auth'?: boolean
   'request-log'?: boolean
-  'gemini-api-key'?: GeminiKey[]
-  'claude-api-key'?: ClaudeKey[]
-  'codex-api-key'?: CodexKey[]
-  'openai-compatibility'?: OpenAICompatibility[]
-  [key: string]: unknown // Allow additional config fields
+  providers?: Provider[]
+  [key: string]: unknown
 }
 
-/**
- * Latest version response
- */
 export interface LatestVersionResponse {
   'latest-version': string
+  cached?: boolean
+  stale?: boolean
 }
 
-/**
- * Config update response
- */
 export interface ConfigUpdateResponse {
   ok: boolean
   changed: string[]

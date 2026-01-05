@@ -346,17 +346,17 @@ export function AddProviderModal({ isOpen, onClose, onSuccess }: AddProviderModa
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add Provider" size="xl" className="p-0 overflow-hidden">
-      <div className="flex h-[550px] w-full bg-(--bg-card)">
+      <div className="flex h-[550px] w-full bg-(--bg-container)">
         
         {/* LEFT SIDEBAR: LIST */}
-        <div className="w-[40%] min-w-[280px] border-r border-(--border-color) flex flex-col bg-(--bg-body)">
+        <div className="w-[40%] min-w-[280px] border-r border-(--border-color) flex flex-col bg-(--bg-nested)">
           <div className="p-4 border-b border-(--border-color)">
             <Input 
               placeholder="Search providers..." 
               icon="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-(--bg-muted)"
+              className="bg-(--bg-container)"
             />
           </div>
           
@@ -396,11 +396,11 @@ export function AddProviderModal({ isOpen, onClose, onSuccess }: AddProviderModa
         </div>
 
         {/* RIGHT CONTENT: CONTEXT AWARE */}
-        <div className="flex-1 relative bg-(--bg-body)">
+        <div className="flex-1 relative bg-(--bg-container)">
           {selectedProvider ? (
             <div className="absolute inset-0 flex flex-col animate-in fade-in duration-200">
               {/* Header */}
-              <div className="p-6 border-b border-(--border-color) flex items-center justify-between bg-(--bg-body)">
+              <div className="p-6 border-b border-(--border-color) flex items-center justify-between bg-(--bg-container)">
                 <div className="flex items-center gap-4">
                   <ProviderLogo providerKey={selectedProvider.providerIdForLogo} fallbackIcon={selectedProvider.icon} className="size-12 rounded-xl shadow-sm" />
                   <div>

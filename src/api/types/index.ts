@@ -1,9 +1,6 @@
-/**
- * API types index - exports all type definitions
- */
-
 export * from './common'
 export * from './settings'
+export * from './providers'
 export * from './api-keys'
 export * from './auth-files'
 export * from './oauth'

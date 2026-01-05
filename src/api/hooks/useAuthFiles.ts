@@ -1,14 +1,8 @@
-/**
- * Authentication files React Query hooks
- */
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../queryKeys'
 import { authFilesApi, vertexApi } from '../endpoints'
+import type { VertexImportRequest } from '../types'
 
-/**
- * Authentication files hooks
- */
 export const useAuthFiles = () =>
   useQuery({
     queryKey: queryKeys.authFilesList(),
@@ -19,17 +13,6 @@ export const useUploadAuthFile = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (file: File) => authFilesApi.upload(file),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.authFilesList() })
-    },
-  })
-}
-
-export const useUploadAuthFileJson = () => {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (data: { name: string; content: Record<string, unknown> }) =>
-      authFilesApi.uploadJson(data.name, data.content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.authFilesList() })
     },
@@ -63,14 +46,10 @@ export const useDownloadAuthFile = (name: string, enabled = false) =>
     enabled,
   })
 
-/**
- * Vertex AI import hooks
- */
 export const useImportVertex = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: { file: File; location?: string }) =>
-      vertexApi.import(data.file, data.location),
+    mutationFn: (data: VertexImportRequest) => vertexApi.import(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.authFilesList() })
     },

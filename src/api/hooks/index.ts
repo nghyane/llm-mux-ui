@@ -1,8 +1,5 @@
-/**
- * React Query hooks index - exports all hooks
- */
-
 export * from './useSettings'
+export * from './useProviders'
 export * from './useApiKeys'
 export * from './useAuthFiles'
 export * from './useOAuth'

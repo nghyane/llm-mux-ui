@@ -1,12 +1,5 @@
-/**
- * Base API client for llm-mux Management API
- */
+import type { AuthConfig, ApiError, ApiEnvelope } from './types/common'
 
-import type { AuthConfig, ApiError } from './types/common'
-
-/**
- * Custom API error class
- */
 export class ApiClientError extends Error {
   statusCode: number
   error: string
@@ -19,17 +12,11 @@ export class ApiClientError extends Error {
   }
 }
 
-/**
- * API Client configuration
- */
 export interface ApiClientConfig {
   baseUrl?: string
   auth?: AuthConfig
 }
 
-/**
- * Base API client for making HTTP requests
- */
 export class ApiClient {
   private baseUrl: string
   private auth?: AuthConfig
@@ -38,34 +25,22 @@ export class ApiClient {
     this.baseUrl =
       config.baseUrl ||
       import.meta.env.VITE_API_BASE_URL ||
-      'http://localhost:8318/v0/management'
+      'http://localhost:8317/v1/management'
     this.auth = config.auth
   }
 
-  /**
-   * Set authentication credentials
-   */
   setAuth(auth: AuthConfig) {
     this.auth = auth
   }
 
-  /**
-   * Set base URL
-   */
   setBaseUrl(baseUrl: string) {
     this.baseUrl = baseUrl
   }
 
-  /**
-   * Get current base URL
-   */
   getBaseUrl(): string {
     return this.baseUrl
   }
 
-  /**
-   * Get authentication headers
-   */
   private getAuthHeaders(): Record<string, string> {
     if (!this.auth) {
       return {}
@@ -86,14 +61,10 @@ export class ApiClient {
     return {}
   }
 
-  /**
-   * Build full URL with query parameters
-   */
   private buildUrl(
     endpoint: string,
     params?: Record<string, string | number | boolean | undefined>
   ): string {
-    // Ensure baseUrl ends with / and endpoint doesn't start with /
     const base = this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`
     const path = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
     const url = new URL(path, base)
@@ -109,13 +80,21 @@ export class ApiClient {
     return url.toString()
   }
 
-  /**
-   * Handle API response
-   */
+  private unwrapEnvelope<T>(data: unknown): T {
+    if (
+      data &&
+      typeof data === 'object' &&
+      'data' in data &&
+      'meta' in data
+    ) {
+      return (data as ApiEnvelope<T>).data
+    }
+    return data as T
+  }
+
   private async handleResponse<T>(response: Response): Promise<T> {
     const contentType = response.headers.get('content-type')
 
-    // Handle non-JSON responses (e.g., binary files, YAML)
     if (contentType && !contentType.includes('application/json')) {
       if (contentType.includes('application/octet-stream')) {
         return (await response.blob()) as T
@@ -126,7 +105,6 @@ export class ApiClient {
       return (await response.text()) as T
     }
 
-    // Parse JSON response
     const data = await response.json()
 
     if (!response.ok) {
@@ -138,15 +116,9 @@ export class ApiClient {
       )
     }
 
-    // Handle error responses that come with 200 status (e.g., "logging to file disabled")
-    // These are not thrown as errors but returned with the error field
-    // The calling code should handle this case
-    return data
+    return this.unwrapEnvelope<T>(data)
   }
 
-  /**
-   * Make GET request
-   */
   async get<T>(
     endpoint: string,
     params?: Record<string, string | number | boolean | undefined>
@@ -163,9 +135,6 @@ export class ApiClient {
     return this.handleResponse<T>(response)
   }
 
-  /**
-   * Make POST request
-   */
   async post<T>(
     endpoint: string,
     body?: unknown,
@@ -191,9 +160,6 @@ export class ApiClient {
     return this.handleResponse<T>(response)
   }
 
-  /**
-   * Make PUT request
-   */
   async put<T>(
     endpoint: string,
     body?: unknown,
@@ -216,9 +182,6 @@ export class ApiClient {
     return this.handleResponse<T>(response)
   }
 
-  /**
-   * Make PATCH request
-   */
   async patch<T>(
     endpoint: string,
     body?: unknown,
@@ -238,9 +201,6 @@ export class ApiClient {
     return this.handleResponse<T>(response)
   }
 
-  /**
-   * Make DELETE request
-   */
   async delete<T>(
     endpoint: string,
     params?: Record<string, string | number | boolean | undefined>
@@ -258,7 +218,4 @@ export class ApiClient {
   }
 }
 
-/**
- * Default API client instance
- */
 export const apiClient = new ApiClient()

@@ -1,26 +1,14 @@
-/**
- * OAuth React Query Hooks - Unified API
- */
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { queryKeys } from '../queryKeys'
-import { oauthApi, iflowAuthApi } from '../endpoints'
+import { oauthApi } from '../endpoints'
 import {
   createOAuthMessageHandler,
   openOAuthPopup,
   monitorPopupClose,
 } from '../../lib/oauth-message-handler'
 import { OAuthStateManager, validateOAuthUrl, sanitizeOAuthError } from '../../lib/oauth-security'
-import type {
-  OAuthStartRequest,
-  OAuthProvider,
-  IFlowAuthRequest,
-} from '../types'
-
-// ============================================================================
-// OAuth Start/Cancel Mutations
-// ============================================================================
+import type { OAuthStartRequest, OAuthProvider } from '../types'
 
 export function useOAuthStart() {
   return useMutation({
@@ -40,40 +28,34 @@ export function useDeviceFlowStart() {
   })
 }
 
-// ============================================================================
-// OAuth Status with PostMessage Integration
-// ============================================================================
-
 export function useOAuthStatus(
   state: string | null,
   options: {
     enabled?: boolean
-    onSuccess?: (provider: string) => void
-    onError?: (provider: string, error: string) => void
+    onSuccess?: () => void
+    onError?: (error: string) => void
     pollingInterval?: number
   } = {}
 ) {
   const { enabled = false, onSuccess, onError, pollingInterval = 2000 } = options
   const [messageReceived, setMessageReceived] = useState(false)
 
-  // PostMessage listener
   useEffect(() => {
     if (!state || !enabled) return
 
     return createOAuthMessageHandler({
       expectedState: state,
-      onSuccess: (provider) => {
+      onSuccess: () => {
         setMessageReceived(true)
-        onSuccess?.(provider)
+        onSuccess?.()
       },
-      onError: (provider, error) => {
+      onError: (_provider, error) => {
         setMessageReceived(true)
-        onError?.(provider, sanitizeOAuthError(error))
+        onError?.(sanitizeOAuthError(error))
       },
     })
   }, [state, enabled, onSuccess, onError])
 
-  // Server polling as fallback
   const query = useQuery({
     queryKey: queryKeys.oauthStatus(state || ''),
     queryFn: () => oauthApi.getStatus(state!),
@@ -86,32 +68,27 @@ export function useOAuthStatus(
     gcTime: 0,
   })
 
-  // Handle polling completion
   useEffect(() => {
     if (!query.data || messageReceived) return
-    const { status, provider, error } = query.data
+    const { status, error } = query.data
 
     if (status === 'completed') {
-      onSuccess?.(provider)
-    } else if (status === 'failed' || status === 'expired' || status === 'cancelled') {
-      onError?.(provider, sanitizeOAuthError(error || `OAuth ${status}`))
+      onSuccess?.()
+    } else if (status === 'failed' || status === 'cancelled') {
+      onError?.(sanitizeOAuthError(error || `OAuth ${status}`))
     }
   }, [query.data, messageReceived, onSuccess, onError])
 
   return { ...query, messageReceived }
 }
 
-// ============================================================================
-// Device Flow Status
-// ============================================================================
-
 export function useDeviceFlowStatus(
   state: string | null,
   interval: number,
   enabled: boolean,
   options: {
-    onSuccess?: (provider: string) => void
-    onError?: (provider: string, error: string) => void
+    onSuccess?: () => void
+    onError?: (error: string) => void
   } = {}
 ) {
   const { onSuccess, onError } = options
@@ -130,23 +107,19 @@ export function useDeviceFlowStatus(
 
   useEffect(() => {
     if (!query.data) return
-    const { status, provider, error } = query.data
+    const { status, error } = query.data
 
     if (status === 'completed') {
-      onSuccess?.(provider)
-    } else if (status === 'failed' || status === 'expired' || status === 'cancelled') {
-      onError?.(provider, error || `Device flow ${status}`)
+      onSuccess?.()
+    } else if (status === 'failed' || status === 'cancelled') {
+      onError?.(error || `Device flow ${status}`)
     }
   }, [query.data, onSuccess, onError])
 
   return query
 }
 
-// ============================================================================
-// Complete OAuth Flow Hook
-// ============================================================================
-
-const OAUTH_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
+const OAUTH_TIMEOUT_MS = 5 * 60 * 1000
 
 export interface OAuthFlowState {
   isLoading: boolean
@@ -166,6 +139,7 @@ export function useOAuthFlow(options: {
   const [flowState, setFlowState] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPolling, setIsPolling] = useState(false)
+  const [currentProvider, setCurrentProvider] = useState<string | null>(null)
   
   const popupRef = useRef<Window | null>(null)
   const cleanupRef = useRef<(() => void) | null>(null)
@@ -207,7 +181,6 @@ export function useOAuthFlow(options: {
     onError?.(provider, err)
   }, [cleanup, onError])
 
-  // Polling for status as fallback (and required per spec)
   const statusQuery = useQuery({
     queryKey: queryKeys.oauthStatus(flowState || ''),
     queryFn: () => oauthApi.getStatus(flowState!),
@@ -215,27 +188,27 @@ export function useOAuthFlow(options: {
     refetchInterval: (query) => {
       const status = query.state.data?.status
       if (status && status !== 'pending') return false
-      return 2000 // Poll every 2 seconds per spec
+      return 2000
     },
     gcTime: 0,
   })
 
-  // Handle polling results
   useEffect(() => {
-    if (!statusQuery.data || completedRef.current) return
-    const { status, provider, error: pollError } = statusQuery.data
+    if (!statusQuery.data || completedRef.current || !currentProvider) return
+    const { status, error: pollError } = statusQuery.data
 
     if (status === 'completed') {
-      handleSuccess(provider)
-    } else if (status === 'failed' || status === 'expired' || status === 'cancelled') {
-      handleError(provider, sanitizeOAuthError(pollError || `OAuth ${status}`))
+      handleSuccess(currentProvider)
+    } else if (status === 'failed' || status === 'cancelled') {
+      handleError(currentProvider, sanitizeOAuthError(pollError || `OAuth ${status}`))
     }
-  }, [statusQuery.data, handleSuccess, handleError])
+  }, [statusQuery.data, handleSuccess, handleError, currentProvider])
 
   const startFlow = useCallback(async (provider: OAuthProvider, projectId?: string) => {
     setError(null)
     cleanup()
     completedRef.current = false
+    setCurrentProvider(provider)
 
     try {
       const response = await startMutation.mutateAsync({
@@ -254,14 +227,12 @@ export function useOAuthFlow(options: {
       const stateValue = response.state
       OAuthStateManager.store(stateValue, provider)
 
-      // IMPORTANT: Setup message listener BEFORE opening popup
       const messageCleanup = createOAuthMessageHandler({
         expectedState: stateValue,
         onSuccess: () => handleSuccess(provider),
         onError: (_, err) => handleError(provider, err),
       })
 
-      // Open popup
       const popup = openOAuthPopup(response.auth_url)
       if (!popup) {
         messageCleanup()
@@ -270,7 +241,6 @@ export function useOAuthFlow(options: {
 
       popupRef.current = popup
 
-      // Monitor popup close
       const popupCleanup = monitorPopupClose(popup, () => {
         if (!completedRef.current && stateValue) {
           cancelMutation.mutate(stateValue)
@@ -278,7 +248,6 @@ export function useOAuthFlow(options: {
         }
       })
 
-      // Setup 5-minute timeout per spec
       timeoutRef.current = setTimeout(() => {
         if (!completedRef.current) {
           handleError(provider, 'OAuth timeout - please try again')
@@ -286,13 +255,11 @@ export function useOAuthFlow(options: {
         }
       }, OAUTH_TIMEOUT_MS)
 
-      // Store cleanup functions
       cleanupRef.current = () => {
         messageCleanup()
         popupCleanup()
       }
 
-      // Start polling
       setFlowState(stateValue)
       setIsPolling(true)
     } catch (err) {
@@ -308,7 +275,6 @@ export function useOAuthFlow(options: {
     cleanup()
   }, [flowState, cancelMutation, cleanup])
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       cleanup()
@@ -322,18 +288,4 @@ export function useOAuthFlow(options: {
     startFlow,
     cancelFlow,
   }
-}
-
-// ============================================================================
-// iFlow Authentication
-// ============================================================================
-
-export function useIFlowAuth() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (data: IFlowAuthRequest) => iflowAuthApi.authenticateWithCookie(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.authFilesList() })
-    },
-  })
 }

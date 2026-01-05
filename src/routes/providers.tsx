@@ -122,15 +122,15 @@ function ProvidersPage() {
   }
 
   const getProviderUsageByAccount = (provider: AuthFile) => {
-    if (!usageData?.by_provider) return undefined
+    if (!usageData?.by_account) return undefined
 
-    const providerKey = provider.provider?.toLowerCase()
-    const apiUsage = usageData.by_provider[providerKey]
-    if (!apiUsage) return undefined
+    const accountKey = `${provider.provider}:${provider.name}`
+    const accountUsage = usageData.by_account[accountKey]
+    if (!accountUsage) return undefined
 
     return {
-      total_requests: apiUsage.requests,
-      total_tokens: apiUsage.tokens.total,
+      total_requests: accountUsage.requests,
+      total_tokens: accountUsage.tokens.total,
     }
   }
 
@@ -398,9 +398,9 @@ function ProvidersPage() {
 
       {/* Active Providers */}
       {!isLoading && !authError && groupedProviders.active.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-(--text-secondary) uppercase tracking-wider flex items-center gap-2">
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-(--text-primary) flex items-center gap-2">
               <Icon name="check_circle" size="sm" className="text-(--success-text)" />
               Active Connections
               <Badge variant="success">{groupedProviders.active.length}</Badge>
@@ -424,9 +424,9 @@ function ProvidersPage() {
 
       {/* Error Providers */}
       {!isLoading && !authError && groupedProviders.errors.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-(--text-secondary) uppercase tracking-wider flex items-center gap-2">
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-(--text-primary) flex items-center gap-2">
               <Icon name="error" size="sm" className="text-(--danger-text)" />
               Issues & Errors
               <Badge variant="danger">{groupedProviders.errors.length}</Badge>
@@ -450,9 +450,9 @@ function ProvidersPage() {
 
       {/* Disabled Providers */}
       {!isLoading && !authError && groupedProviders.disabled.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-(--text-secondary) uppercase tracking-wider flex items-center gap-2">
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-(--text-primary) flex items-center gap-2">
               <Icon name="block" size="sm" />
               Disabled Providers
               <Badge variant="default">{groupedProviders.disabled.length}</Badge>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { Button } from '../../ui/Button'
 import { Input } from '../../ui/Input'
 import { Icon } from '../../ui/Icon'
@@ -21,6 +21,9 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
   const [testState, setTestState] = useState<TestState>('idle')
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string>('')
+  
+  const baseUrlId = useId()
+  const mgmtKeyId = useId()
 
   const handleTestConnection = async () => {
     if (!managementKey.trim()) {
@@ -81,13 +84,13 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
             transition={{ delay: 0.1, duration: 0.3 }}
             className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-(--accent-primary) to-(--text-tertiary) rounded-2xl flex items-center justify-center shadow-lg"
           >
-            <Icon name="hub" className="text-white text-[32px]" />
+            <Icon name="hub" className="text-(--accent-primary-fg) text-[32px]" />
           </motion.div>
           <motion.h1
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.3 }}
-            className="text-3xl font-bold text-(--text-primary) mb-2"
+            className="text-2xl font-semibold tracking-tight text-(--text-primary) mb-2"
           >
             LLM-MUX
           </motion.h1>
@@ -126,16 +129,17 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
             </div>
 
             {/* Card Content */}
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-6">
               {/* Base URL */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-(--text-primary)">
+                <label htmlFor={baseUrlId} className="block text-sm font-medium text-(--text-primary)">
                   Base URL
                   <span className="text-(--text-tertiary) font-normal ml-2">
                     (Management API endpoint)
                   </span>
                 </label>
                 <Input
+                  id={baseUrlId}
                   type="text"
                   value={baseUrl}
                   onChange={(e) => {
@@ -155,12 +159,13 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
 
               {/* Management Key */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-(--text-primary)">
+                <label htmlFor={mgmtKeyId} className="block text-sm font-medium text-(--text-primary)">
                   Management Key
                   <span className="text-(--danger-text) ml-1">*</span>
                 </label>
                 <div className="relative">
                   <Input
+                    id={mgmtKeyId}
                     type={showPassword ? 'text' : 'password'}
                     value={managementKey}
                     onChange={(e) => {

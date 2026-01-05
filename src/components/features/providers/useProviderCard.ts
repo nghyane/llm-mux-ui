@@ -24,7 +24,7 @@ export function useProviderCard({ provider }: ProviderCardProps) {
   const displayName = providerDisplayNames[provider.provider] || provider.provider
 
   // Determine if provider is effectively "on" - connected and not disabled
-  const isProviderOn = !provider.disabled && (provider.status === 'ok' || provider.status === 'active')
+  const isProviderOn = !provider.disabled && provider.status === 'active'
 
   // Determine if provider has error state
   const hasError = provider.status === 'error' || provider.unavailable
@@ -45,10 +45,10 @@ export function useProviderCard({ provider }: ProviderCardProps) {
 
   const getBadgeText = () => {
     if (provider.disabled) return 'Disabled'
-    if (provider.unavailable) return 'Unavailable'
+    if (provider.status === 'unavailable') return 'Unavailable'
     if (provider.status === 'error') return 'Error'
-    if (provider.status === 'expired') return 'Expired'
-    if (isProviderOn) return 'Connected'
+    if (provider.status === 'cooling') return 'Cooling Down'
+    if (provider.status === 'active') return 'Connected'
     return provider.status || 'Unknown'
   }
 

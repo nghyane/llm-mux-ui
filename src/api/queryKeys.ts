@@ -1,11 +1,4 @@
-/**
- * Query key factory for React Query
- *
- * Hierarchical query keys for efficient cache invalidation and organization
- */
-
 export const queryKeys = {
-  // Settings keys
   settings: ['settings'] as const,
   debug: () => [...queryKeys.settings, 'debug'] as const,
   loggingToFile: () => [...queryKeys.settings, 'logging-to-file'] as const,
@@ -18,37 +11,30 @@ export const queryKeys = {
   requestRetry: () => [...queryKeys.settings, 'request-retry'] as const,
   maxRetryInterval: () => [...queryKeys.settings, 'max-retry-interval'] as const,
 
-  // API Keys
+  providers: ['providers'] as const,
+  providersList: () => [...queryKeys.providers, 'list'] as const,
+
   apiKeys: ['api-keys'] as const,
   accessKeys: () => [...queryKeys.apiKeys, 'access'] as const,
-  geminiKeys: () => [...queryKeys.apiKeys, 'gemini'] as const,
-  claudeKeys: () => [...queryKeys.apiKeys, 'claude'] as const,
-  codexKeys: () => [...queryKeys.apiKeys, 'codex'] as const,
-  openaiCompatibility: () => [...queryKeys.apiKeys, 'openai-compatibility'] as const,
   oauthExcludedModels: () => [...queryKeys.apiKeys, 'oauth-excluded-models'] as const,
 
-  // Auth Files
   authFiles: ['auth-files'] as const,
   authFilesList: () => [...queryKeys.authFiles, 'list'] as const,
   authFileDownload: (name: string) => [...queryKeys.authFiles, 'download', name] as const,
 
-  // OAuth
   oauth: ['oauth'] as const,
-  oauthUrl: (provider: string) => [...queryKeys.oauth, 'url', provider] as const,
   oauthStatus: (state: string) => [...queryKeys.oauth, 'status', state] as const,
 
-  // Usage
   usage: ['usage'] as const,
-  usageStats: () => [...queryKeys.usage, 'stats'] as const,
+  usageStats: (params?: { days?: number; from?: string; to?: string }) =>
+    [...queryKeys.usage, 'stats', params] as const,
 
-  // Logs
   logs: ['logs'] as const,
   serverLogs: (after?: number, limit?: number) =>
     [...queryKeys.logs, 'server', { after, limit }] as const,
   errorLogFiles: () => [...queryKeys.logs, 'error-files'] as const,
   errorLog: (name: string) => [...queryKeys.logs, 'error', name] as const,
 
-  // Config
   config: ['config'] as const,
   configJson: () => [...queryKeys.config, 'json'] as const,
   configYaml: () => [...queryKeys.config, 'yaml'] as const,

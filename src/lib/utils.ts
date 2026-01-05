@@ -48,3 +48,21 @@ export function formatTimestamp(date: Date | string | number): string {
   const d = new Date(date)
   return d.toISOString().replace('T', ' ').slice(0, 19)
 }
+
+// Format token counts with units
+export function formatTokens(tokens: number): string {
+  if (tokens >= 1000000) {
+    return `${(tokens / 1000000).toFixed(2)}M tokens`
+  }
+  if (tokens >= 1000) {
+    return `${(tokens / 1000).toFixed(1)}K tokens`
+  }
+  return `${tokens} tokens`
+}
+
+// Format byte sizes
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}

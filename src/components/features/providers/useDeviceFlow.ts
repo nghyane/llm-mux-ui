@@ -41,7 +41,7 @@ export function useDeviceFlow(options?: UseDeviceFlowOptions) {
         options?.onSuccess?.()
         setTimeout(() => reset(), 2000)
       },
-      onError: (_, err) => {
+      onError: (err: string) => {
         setStatus('error')
         setError(err)
         options?.onError?.(err)
@@ -79,9 +79,7 @@ export function useDeviceFlow(options?: UseDeviceFlowOptions) {
       }
 
       setUserCode(response.user_code)
-      // Use verification_url_complete, fallback to auth_url (Qwen), fallback to verification_url
       setVerificationUrl(
-        response.verification_url_complete || 
         response.auth_url || 
         response.verification_url || 
         null

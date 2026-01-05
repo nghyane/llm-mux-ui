@@ -113,7 +113,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         className={cn(
-          'relative w-full mx-4 bg-(--bg-card) border border-(--border-color) rounded-xl shadow-2xl',
+          'relative w-full mx-4 surface-2 border border-(--border-color) rounded-xl',
           'animate-in zoom-in-95 duration-200',
           sizeStyles[size],
           className

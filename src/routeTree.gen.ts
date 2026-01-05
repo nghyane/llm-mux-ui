@@ -13,6 +13,8 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as ModelsRouteImport } from './routes/models'
 import { Route as LogsRouteImport } from './routes/logs'
+import { Route as ConfigRouteImport } from './routes/config'
+import { Route as ApiKeysRouteImport } from './routes/api-keys'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -36,6 +38,16 @@ const LogsRoute = LogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfigRoute = ConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiKeysRoute = ApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -50,6 +62,8 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/config': typeof ConfigRoute
   '/logs': typeof LogsRoute
   '/models': typeof ModelsRoute
   '/providers': typeof ProvidersRoute
@@ -58,6 +72,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/config': typeof ConfigRoute
   '/logs': typeof LogsRoute
   '/models': typeof ModelsRoute
   '/providers': typeof ProvidersRoute
@@ -67,6 +83,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/config': typeof ConfigRoute
   '/logs': typeof LogsRoute
   '/models': typeof ModelsRoute
   '/providers': typeof ProvidersRoute
@@ -77,16 +95,28 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analytics'
+    | '/api-keys'
+    | '/config'
     | '/logs'
     | '/models'
     | '/providers'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analytics' | '/logs' | '/models' | '/providers' | '/settings'
+  to:
+    | '/'
+    | '/analytics'
+    | '/api-keys'
+    | '/config'
+    | '/logs'
+    | '/models'
+    | '/providers'
+    | '/settings'
   id:
     | '__root__'
     | '/'
     | '/analytics'
+    | '/api-keys'
+    | '/config'
     | '/logs'
     | '/models'
     | '/providers'
@@ -96,6 +126,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  ApiKeysRoute: typeof ApiKeysRoute
+  ConfigRoute: typeof ConfigRoute
   LogsRoute: typeof LogsRoute
   ModelsRoute: typeof ModelsRoute
   ProvidersRoute: typeof ProvidersRoute
@@ -132,6 +164,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LogsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/config': {
+      id: '/config'
+      path: '/config'
+      fullPath: '/config'
+      preLoaderRoute: typeof ConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-keys': {
+      id: '/api-keys'
+      path: '/api-keys'
+      fullPath: '/api-keys'
+      preLoaderRoute: typeof ApiKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analytics': {
       id: '/analytics'
       path: '/analytics'
@@ -152,6 +198,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
+  ApiKeysRoute: ApiKeysRoute,
+  ConfigRoute: ConfigRoute,
   LogsRoute: LogsRoute,
   ModelsRoute: ModelsRoute,
   ProvidersRoute: ProvidersRoute,

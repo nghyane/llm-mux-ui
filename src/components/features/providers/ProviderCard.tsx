@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { type AuthFile } from '../../../api/types'
 import { cn } from '../../../lib/cn'
+import { formatNumber } from '../../../lib/utils'
 import { Icon } from '../../ui/Icon'
 import { Modal, ModalFooter } from '../../ui/Modal'
 import { Button } from '../../ui/Button'
-import { getProviderConfig } from '../../../lib/providers'
+import { getProviderConfig, getProviderLogoUrl } from '../../../lib/providers'
 import { useProviderCard } from './useProviderCard'
 
 interface ProviderCardProps {
@@ -38,10 +39,14 @@ const formatTime = (dateString?: string) => {
   return date.toLocaleDateString()
 }
 
-const formatNumber = (num: number): string => {
-  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`
-  if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`
-  return num.toLocaleString()
+const formatCooldownTime = (seconds: number) => {
+  if (seconds < 60) return `${seconds}s`
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  if (minutes < 60) return `${minutes}m ${remainingSeconds}s`
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  return `${hours}h ${remainingMinutes}m`
 }
 
 export function ProviderCard({ provider, usage, onRefresh, onDisconnect, onToggleDisabled, isRefreshing = false }: ProviderCardProps) {
@@ -56,8 +61,9 @@ export function ProviderCard({ provider, usage, onRefresh, onDisconnect, onToggl
     shouldShowPulse 
   } = useProviderCard({ provider, usage });
 
-  const providerConfig = getProviderConfig(provider.source || '')
+  const providerConfig = getProviderConfig(provider.provider || provider.type || '')
   const brandColor = providerConfig.color
+  const logoUrl = getProviderLogoUrl(providerConfig.providerIdForLogo)
 
   // Toggle handler
   const handleToggle = (e: React.MouseEvent) => {
@@ -78,7 +84,7 @@ export function ProviderCard({ provider, usage, onRefresh, onDisconnect, onToggl
     <>
       <div 
         className={cn(
-          'group relative flex flex-col rounded-xl border border-(--border-color) bg-(--bg-card) p-5 transition-all',
+          'group relative flex flex-col rounded-xl border border-(--border-color) bg-(--bg-card) p-6 transition-all',
           provider.disabled ? 'opacity-75' : 'hover:shadow-sm'
         )}
         style={{
@@ -93,27 +99,25 @@ export function ProviderCard({ provider, usage, onRefresh, onDisconnect, onToggl
         <div className="flex items-center justify-between mb-6 relative z-10">
           <div className="flex items-center gap-3">
             <div 
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-lg border border-(--border-color) overflow-hidden transition-colors",
-                !providerConfig.logoUrl && "font-bold text-(--text-tertiary)"
-              )}
-              style={{ backgroundColor: `${brandColor}10` }}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-(--border-color) overflow-hidden transition-colors bg-(--bg-logo-container)"
             >
-              {providerConfig.logoUrl ? (
-                <img 
-                  src={providerConfig.logoUrl} 
-                  alt={displayName} 
-                  className="h-6 w-6 object-contain"
-                  onError={(e) => {
-                    // Fallback if image fails
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement?.classList.add('bg-(--bg-hover)', 'font-bold', 'text-(--text-tertiary)');
-                    e.currentTarget.parentElement!.innerText = displayName.charAt(0);
-                  }}
-                />
-              ) : (
-                <span style={{ color: brandColor }}>{displayName.charAt(0)}</span>
-              )}
+              <img 
+                src={logoUrl} 
+                alt={displayName} 
+                className="h-6 w-6 object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.nextElementSibling) {
+                    (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                  }
+                }}
+              />
+              <span 
+                className="hidden h-full w-full items-center justify-center font-bold text-(--text-tertiary)"
+                style={{ color: brandColor }}
+              >
+                {displayName.charAt(0)}
+              </span>
             </div>
             <div>
               <h3 className="font-semibold text-(--text-primary)">{displayName}</h3>
@@ -130,15 +134,15 @@ export function ProviderCard({ provider, usage, onRefresh, onDisconnect, onToggl
           )}>
             {shouldShowPulse ? (
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: 'var(--success-text)' }}></span>
-                <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: 'var(--success-text)' }}></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-(--success-text)"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-(--success-text)"></span>
               </span>
             ) : (
               <span className="relative flex h-2 w-2">
                 <span className={cn(
                   "relative inline-flex rounded-full h-2 w-2",
-                  hasError ? "[color:var(--danger-text)]" : "[color:var(--text-secondary)]"
-                )} style={{ backgroundColor: hasError ? 'var(--danger-text)' : 'var(--text-secondary)' }}></span>
+                  hasError ? "bg-(--danger-text)" : "bg-(--text-secondary)"
+                )}></span>
               </span>
             )}
             {getBadgeText()}
@@ -163,8 +167,66 @@ export function ProviderCard({ provider, usage, onRefresh, onDisconnect, onToggl
           </div>
         )}
 
+        {provider.quota_state && (
+          <div className="mb-6 space-y-3">
+            {provider.quota_state.in_cooldown && (
+              <div className="bg-(--warning-bg) p-3 rounded-md border border-(--warning-text)/20 animate-pulse">
+                <div className="flex items-center gap-2 text-(--warning-text)">
+                  <Icon name="schedule" size="sm" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Cooldown Active</span>
+                </div>
+                <div className="mt-1 pl-6">
+                  <p className="text-sm font-mono font-medium text-(--text-primary)">
+                    {formatCooldownTime(provider.quota_state.cooldown_remaining_seconds || 0)} remaining
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {provider.quota_state.active_requests > 0 && (
+              <div className="flex items-center gap-2 px-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--brand-color)] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--brand-color)]"></span>
+                </span>
+                <span className="text-xs text-(--text-primary) font-medium">
+                  {provider.quota_state.active_requests} active request{provider.quota_state.active_requests !== 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
+
+            {provider.quota_state.learned_limit && provider.quota_state.learned_limit > 0 && (
+              <div className="px-1">
+                <div className="flex justify-between items-end mb-1.5">
+                  <span className="text-[10px] uppercase tracking-wider text-(--text-secondary) font-medium">Quota Usage</span>
+                  <span className="text-xs font-mono text-(--text-secondary)">
+                    <span className={cn(
+                      "font-bold",
+                      (provider.quota_state.total_tokens_used / provider.quota_state.learned_limit) > 0.9 ? "text-(--danger-text)" : "text-(--text-primary)"
+                    )}>
+                      {formatNumber(provider.quota_state.total_tokens_used)}
+                    </span>
+                    <span className="opacity-50"> / {formatNumber(provider.quota_state.learned_limit)}</span>
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-(--border-color) rounded-full overflow-hidden">
+                  <div 
+                    className={cn(
+                      "h-full transition-all duration-500 rounded-full",
+                      (provider.quota_state.total_tokens_used / provider.quota_state.learned_limit) > 0.9 ? "bg-(--danger-text)" :
+                      (provider.quota_state.total_tokens_used / provider.quota_state.learned_limit) > 0.7 ? "bg-(--warning-text)" :
+                      "bg-(--success-text)"
+                    )}
+                    style={{ width: `${Math.min(100, (provider.quota_state.total_tokens_used / provider.quota_state.learned_limit) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 2. HERO STATS (Always show, with placeholder if no data) */}
-        <div className="mb-6 grid grid-cols-2 gap-8 border-l-2 border-(--border-color) pl-6 ml-2">
+        <div className="mb-6 grid grid-cols-2 gap-6 border-l-2 border-(--border-color) pl-6 ml-2">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-(--text-secondary) font-medium">Requests</p>
             {usage ? (
@@ -221,7 +283,7 @@ export function ProviderCard({ provider, usage, onRefresh, onDisconnect, onToggl
                 <Icon name="progress_activity" size="sm" className="inline mr-1 animate-spin" />
                 Refreshing...
               </>
-            ) : provider.status === 'expired' ? (
+            ) : provider.status === 'error' || provider.status === 'unavailable' ? (
               <>
                 <Icon name="key" size="sm" className="inline mr-1" />
                 Reconnect
@@ -253,7 +315,7 @@ export function ProviderCard({ provider, usage, onRefresh, onDisconnect, onToggl
                 role="switch"
               >
                 <div className={cn(
-                  'h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform',
+                  'h-4 w-4 rounded-full bg-(--bg-card) shadow-sm transform transition-transform',
                   isProviderOn ? 'translate-x-4' : 'translate-x-0'
                 )} />
               </button>

@@ -1,10 +1,18 @@
-/**
- * Authentication files types
- */
+export type AuthFileStatus = 'active' | 'disabled' | 'error' | 'cooling' | 'unavailable'
 
-/**
- * Authentication file metadata
- */
+export type AuthFileSource = 'file' | 'memory'
+
+export interface QuotaState {
+  active_requests: number
+  total_tokens_used: number
+  in_cooldown: boolean
+  cooldown_until?: string
+  cooldown_remaining_seconds?: number
+  learned_limit?: number
+  learned_cooldown_seconds?: number
+  last_exhausted_at?: string
+}
+
 export interface AuthFile {
   id: string
   auth_index?: number
@@ -12,68 +20,39 @@ export interface AuthFile {
   type: string
   provider: string
   label?: string
-  status: string
+  email?: string
+  account_type?: string
+  account?: string
+  status: AuthFileStatus
   status_message?: string
   disabled?: boolean
   unavailable?: boolean
   runtime_only?: boolean
-  source: 'file' | 'memory'
+  source: AuthFileSource
+  path?: string
   size?: number
-  email?: string
-  account_type?: string
-  account?: string
-  created_at?: string
   modtime?: string
+  created_at?: string
   updated_at?: string
   last_refresh?: string
-  path?: string
+  quota_state?: QuotaState
 }
 
-/**
- * List auth files response
- */
 export interface AuthFilesResponse {
   files: AuthFile[]
 }
 
-/**
- * Delete auth files response
- */
 export interface DeleteAuthFilesResponse {
   status: string
-  deleted: number
+  deleted?: number
 }
 
-/**
- * Vertex import response
- */
+export interface VertexImportRequest {
+  credentials: Record<string, unknown>
+  project_id?: string
+  location?: string
+}
+
 export interface VertexImportResponse {
   status: string
-  'auth-file': string
-  project_id: string
-  email: string
-  location: string
-}
-
-/**
- * Upload auth file request (multipart)
- */
-export interface UploadAuthFileRequest {
-  file: File
-}
-
-/**
- * Upload auth file request (JSON)
- */
-export interface UploadAuthFileJsonRequest {
-  name: string
-  content: Record<string, unknown>
-}
-
-/**
- * Vertex import request
- */
-export interface VertexImportRequest {
-  file: File
-  location?: string
 }

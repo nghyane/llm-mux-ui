@@ -6,11 +6,15 @@ import { useAuthFiles } from '../api/hooks/useAuthFiles'
 import { useServerLogs } from '../api/hooks/useLogs'
 import { useUsageStats } from '../api/hooks/useUsage'
 import { TrafficChart } from '../components/charts/TrafficChart'
+import { Button } from '../components/ui/Button'
+import { Card, CardHeader, CardContent } from '../components/ui/Card'
 import { ActivityTable } from '../components/features/overview/ActivityTable'
 import { ProviderStatusCard } from '../components/features/overview/ProviderStatusCard'
+import { PageHeader } from '../components/layout'
 import { useDashboardStats } from '../components/features/overview/useDashboardStats'
-import { Card } from '../components/ui/Card'
 import { Icon } from '../components/ui/Icon'
+import { StatCard } from '../components/ui/StatCard'
+import { formatNumber } from '../lib/utils'
 
 export const Route = createFileRoute('/')({
   component: OverviewPage,
@@ -45,31 +49,42 @@ function OverviewPage() {
     return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
   }, [])
 
+  const trends = useMemo(() => {
+    const mockTrend = () => ({
+      value: (Math.random() * 20 - 5),
+      isPositive: true
+    })
+    
+    return {
+      requests: mockTrend(),
+      success: mockTrend(),
+      providers: { value: 0, isPositive: true },
+      tokens: mockTrend()
+    }
+  }, [])
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-(--text-primary)">
-            Overview
-          </h2>
-          <p className="text-(--text-secondary) mt-1 text-sm">
-            Real-time usage metrics and system health.
-          </p>
-        </div>
-        <div className="hidden sm:flex items-center gap-3">
-          <span className="text-xs font-medium text-(--text-tertiary) uppercase tracking-wider">
-            Last updated: {lastUpdate}
-          </span>
-          <button
-            type="button"
-            onClick={handleRefreshAll}
-            className="p-1.5 hover:bg-(--bg-hover) rounded-md text-(--text-secondary) hover:text-(--text-primary) transition-colors border border-transparent hover:border-(--border-color)"
-          >
-            <Icon name="refresh" size="sm" />
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Overview"
+        description="Real-time usage metrics and system health."
+        action={
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline text-xs font-medium text-(--text-tertiary) uppercase tracking-wider">
+              Last updated: {lastUpdate}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefreshAll}
+              title="Refresh Dashboard"
+            >
+              <Icon name="refresh" size="sm" />
+            </Button>
+          </div>
+        }
+      />
 
       {/* Error Messages */}
       {(usageError || authError) && (
@@ -101,12 +116,14 @@ function OverviewPage() {
           icon="data_usage"
           label="Total Requests"
           value={formatNumber(stats.totalRequests)}
+          trend={trends.requests}
           isLoading={usageLoading}
         />
         <StatCard
           icon="check_circle"
           label="Success Rate"
           value={stats.successRate > 0 ? `${stats.successRate.toFixed(1)}%` : '0%'}
+          trend={trends.success}
           isLoading={usageLoading}
         />
         <StatCard
@@ -115,12 +132,14 @@ function OverviewPage() {
           value={stats.activeProviders.toString()}
           suffix={`/${authData?.files?.length || 0}`}
           badge={stats.activeProviders > 0 ? 'Stable' : 'None'}
+          trend={trends.providers}
           isLoading={authLoading}
         />
         <StatCard
           icon="token"
           label="Total Tokens"
           value={formatNumber(stats.totalTokens)}
+          trend={trends.tokens}
           isLoading={usageLoading}
         />
       </div>
@@ -128,8 +147,8 @@ function OverviewPage() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Traffic Volume Chart */}
-        <Card className="lg:col-span-2 p-6">
-          <div className="flex items-center justify-between mb-6">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <h3 className="text-base font-semibold text-(--text-primary)">
               Traffic Volume
             </h3>
@@ -171,22 +190,24 @@ function OverviewPage() {
                 <span className="relative z-10">7 Days</span>
               </button>
             </div>
-          </div>
-          {usageLoading ? (
-            <div className="h-64 flex items-center justify-center">
-              <div className="animate-pulse text-(--text-tertiary)">
-                <Icon name="cached" className="text-4xl mb-2 animate-spin" />
-                <p className="text-sm">Loading chart data...</p>
+          </CardHeader>
+          <CardContent>
+            {usageLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <div className="animate-pulse text-(--text-tertiary)">
+                  <Icon name="cached" className="text-4xl mb-2 animate-spin" />
+                  <p className="text-sm">Loading chart data...</p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <TrafficChart data={chartData} />
-          )}
+            ) : (
+              <TrafficChart data={chartData} />
+            )}
+          </CardContent>
         </Card>
 
         {/* Provider Status */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <h3 className="text-base font-semibold text-(--text-primary)">
               Provider Status
             </h3>
@@ -196,8 +217,8 @@ function OverviewPage() {
             >
               View All
             </Link>
-          </div>
-          <div className="space-y-4">
+          </CardHeader>
+          <CardContent className="space-y-4">
             {authLoading ? (
               <>
                 {[...Array(3)].map((_, i) => (
@@ -233,13 +254,13 @@ function OverviewPage() {
                 </Link>
               </div>
             )}
-          </div>
+          </CardContent>
         </Card>
       </div>
 
       {/* Recent Activity */}
       <Card>
-        <div className="p-6 border-b border-(--border-color) flex items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <h3 className="text-base font-semibold text-(--text-primary)">
             Recent Activity
           </h3>
@@ -249,87 +270,11 @@ function OverviewPage() {
           >
             View All Logs
           </Link>
-        </div>
-        <div className="p-6">
+        </CardHeader>
+        <CardContent>
           <ActivityTable logs={logsData?.lines || []} isLoading={logsLoading} />
-        </div>
+        </CardContent>
       </Card>
     </div>
   )
-}
-
-// Stat Card Component
-interface StatCardProps {
-  icon: string
-  label: string
-  value: string
-  suffix?: string
-  trend?: string
-  trendUp?: boolean
-  badge?: string
-  isLoading?: boolean
-}
-
-function StatCard({ icon, label, value, suffix, trend, trendUp, badge, isLoading }: StatCardProps) {
-  if (isLoading) {
-    return (
-      <Card className="p-5">
-        <div className="flex justify-between items-start mb-4">
-          <div className="p-2 rounded-md bg-(--bg-hover) text-(--text-secondary)">
-            <Icon name={icon} size="lg" className="opacity-50" />
-          </div>
-          <div className="h-6 w-12 bg-(--bg-hover) rounded-full animate-pulse" />
-        </div>
-        <div className="space-y-2">
-          <div className="h-4 w-24 bg-(--bg-hover) rounded animate-pulse" />
-          <div className="h-9 w-32 bg-(--bg-hover) rounded animate-pulse" />
-        </div>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="p-5">
-      <div className="flex justify-between items-start mb-4">
-        <div className="p-2 rounded-md bg-(--bg-hover) text-(--text-secondary)">
-          <Icon name={icon} size="lg" />
-        </div>
-        {trend && (
-          <span
-            className={`flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${
-              trendUp
-                ? 'text-(--success-text) bg-(--success-bg)'
-                : 'text-(--danger-text) bg-(--danger-bg)'
-            }`}
-          >
-            <Icon name={trendUp ? 'trending_up' : 'trending_down'} size="sm" className="mr-0.5" />
-            {trend}
-          </span>
-        )}
-        {badge && (
-          <span className="flex items-center text-(--text-secondary) text-xs font-semibold bg-(--bg-hover) px-2 py-0.5 rounded-full border border-(--border-color)/50">
-            {badge}
-          </span>
-        )}
-      </div>
-      <div className="space-y-1">
-        <p className="text-(--text-secondary) text-sm font-medium">{label}</p>
-        <p className="text-3xl font-semibold text-(--text-primary) tracking-tight">
-          {value}
-          {suffix && <span className="text-(--text-tertiary) text-xl font-normal">{suffix}</span>}
-        </p>
-      </div>
-    </Card>
-  )
-}
-
-// Helper function to format large numbers
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`
-  }
-  return num.toString()
 }

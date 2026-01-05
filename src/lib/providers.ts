@@ -1,26 +1,30 @@
 // Provider configuration and display utilities
 import type { OAuthProvider, DeviceFlowProvider } from '../api/types/oauth'
+import type { ProviderType } from '../api/types/providers'
 
-// Auth Method Types
 export type AuthMethod = 
   | { type: 'oauth'; provider: OAuthProvider }
   | { type: 'device'; provider: DeviceFlowProvider }
   | { type: 'cookie'; endpoint: 'iflow' }
-  | { type: 'apikey'; keyType: 'gemini' | 'claude' | 'codex' | 'openai-compatible' }
+  | { type: 'apikey'; keyType: ProviderType | 'openai-compatible' }
   | { type: 'file'; fileType: 'vertex' | 'any' }
 
 export interface ProviderDef {
   id: string
   name: string
   description: string
-  icon: string // Material Symbol name
-  providerIdForLogo: string // Key to lookup in PROVIDER_CONFIG or use for logo mapping
-  color: string // Brand color
+  icon: string
+  providerIdForLogo: string
+  color: string
   method: AuthMethod
-  // Additional UI config
   initial: string
   bgColor: string
-  logoUrl?: string
+}
+
+const LOGO_BASE_URL = 'https://models.dev/logos'
+
+export function getProviderLogoUrl(providerId: string): string {
+  return `${LOGO_BASE_URL}/${providerId.toLowerCase()}.svg`
 }
 
 // Consolidated Provider Configuration
@@ -35,7 +39,6 @@ export const ALL_PROVIDERS: ProviderDef[] = [
     color: '#10a37f', 
     initial: 'O',
     bgColor: 'rgba(16, 163, 127, 0.15)',
-    logoUrl: '/logos/openai.svg',
     method: { type: 'oauth', provider: 'codex' } 
   },
   { 
@@ -47,7 +50,6 @@ export const ALL_PROVIDERS: ProviderDef[] = [
     color: '#d97757', 
     initial: 'A',
     bgColor: 'rgba(217, 119, 87, 0.15)',
-    logoUrl: '/logos/anthropic.svg',
     method: { type: 'oauth', provider: 'claude' } 
   },
   { 
@@ -55,11 +57,10 @@ export const ALL_PROVIDERS: ProviderDef[] = [
     name: 'Google Gemini', 
     description: 'Gemini 1.5 Pro & Flash', 
     icon: 'auto_awesome', 
-    providerIdForLogo: 'gemini-cli', 
+    providerIdForLogo: 'gemini', 
     color: '#4285f4', 
     initial: 'G',
     bgColor: 'rgba(66, 133, 244, 0.15)',
-    logoUrl: '/logos/gemini.svg',
     method: { type: 'oauth', provider: 'gemini-cli' } 
   },
   { 
@@ -67,11 +68,10 @@ export const ALL_PROVIDERS: ProviderDef[] = [
     name: 'Google Cloud', 
     description: 'Vertex AI via Antigravity', 
     icon: 'cloud', 
-    providerIdForLogo: 'vertex', 
+    providerIdForLogo: 'antigravity', 
     color: '#4285f4', 
     initial: 'V',
     bgColor: 'rgba(66, 133, 244, 0.15)',
-    logoUrl: '/logos/google.svg',
     method: { type: 'oauth', provider: 'antigravity' } 
   },
   { 
@@ -83,7 +83,6 @@ export const ALL_PROVIDERS: ProviderDef[] = [
     color: '#24292e', 
     initial: 'GH',
     bgColor: 'rgba(36, 41, 46, 0.15)',
-    logoUrl: '/logos/github.svg', // Assuming we might have this, or fallback to icon
     method: { type: 'device', provider: 'copilot' } 
   },
   { 
@@ -117,8 +116,7 @@ export const ALL_PROVIDERS: ProviderDef[] = [
     color: '#6366f1',
     initial: 'M',
     bgColor: 'rgba(99, 102, 241, 0.15)',
-    logoUrl: '/logos/mistral.svg',
-    method: { type: 'apikey', keyType: 'openai-compatible' } // Usually compatible
+    method: { type: 'apikey', keyType: 'openai-compatible' }
   },
   { 
     id: 'groq',
@@ -129,7 +127,6 @@ export const ALL_PROVIDERS: ProviderDef[] = [
     color: '#f97316',
     initial: 'G',
     bgColor: 'rgba(249, 115, 22, 0.15)',
-    logoUrl: '/logos/groq.svg',
     method: { type: 'apikey', keyType: 'openai-compatible' }
   },
   { 
@@ -141,7 +138,6 @@ export const ALL_PROVIDERS: ProviderDef[] = [
     color: '#14b8a6',
     initial: 'C',
     bgColor: 'rgba(20, 184, 166, 0.15)',
-    logoUrl: '/logos/cohere.svg',
     method: { type: 'apikey', keyType: 'openai-compatible' }
   },
   { 
@@ -187,20 +183,32 @@ const DEFAULT_PROVIDER: ProviderDef = {
 export function getProviderConfig(key: string): ProviderDef {
   const normalizedKey = key.toLowerCase()
   
-  // Try to match by providerIdForLogo first (most reliable for backend keys)
-  const match = ALL_PROVIDERS.find(p => 
+  // Try to match by providerIdForLogo or id first
+  let match = ALL_PROVIDERS.find(p => 
     p.providerIdForLogo.toLowerCase() === normalizedKey || 
     p.id.toLowerCase() === normalizedKey
   )
 
   if (match) return match
 
+  // Try to match by method.provider (for OAuth/Device flow providers)
+  // This handles cases where API returns provider keys like "antigravity", "claude", "codex"
+  match = ALL_PROVIDERS.find(p => {
+    if (p.method.type === 'oauth' || p.method.type === 'device') {
+      return p.method.provider.toLowerCase() === normalizedKey
+    }
+    return false
+  })
+
+  if (match) return match
+
   // Fallback for known legacy keys
   if (normalizedKey === 'gemini-api') return getProviderConfig('google')
+  if (normalizedKey === 'vertex' || normalizedKey === 'vertex-ai') return getProviderConfig('google-cloud')
   
   return {
     ...DEFAULT_PROVIDER,
-    name: key, // Use the key as name if unknown
+    name: key,
     initial: key.charAt(0).toUpperCase(),
   }
 }

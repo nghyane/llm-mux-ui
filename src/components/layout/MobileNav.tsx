@@ -86,7 +86,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
             <div className="p-4 border-t border-(--border-color)">
               <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-(--bg-hover) transition-colors">
-                <div className="size-8 rounded-full bg-gradient-to-br from-gray-500 to-gray-700" />
+                <div className="size-8 rounded-full bg-(--bg-muted)" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-(--text-primary) truncate">Admin</p>
                   <p className="text-xs text-(--text-secondary) truncate">admin@llm-mux.io</p>

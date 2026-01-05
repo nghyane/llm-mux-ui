@@ -22,6 +22,7 @@ interface OAuthButtonProps {
 
 const PROVIDER_LABELS: Record<OAuthProvider | DeviceFlowProvider, string> = {
   claude: 'Claude',
+  anthropic: 'Anthropic',
   codex: 'OpenAI Codex',
   gemini: 'Google Gemini',
   'gemini-cli': 'Google Gemini',
@@ -29,9 +30,10 @@ const PROVIDER_LABELS: Record<OAuthProvider | DeviceFlowProvider, string> = {
   iflow: 'iFlow',
   qwen: 'Qwen',
   copilot: 'GitHub Copilot',
+  'github-copilot': 'GitHub Copilot',
 }
 
-const DEVICE_FLOW_PROVIDERS: DeviceFlowProvider[] = ['qwen', 'copilot']
+const DEVICE_FLOW_PROVIDERS: DeviceFlowProvider[] = ['qwen', 'copilot', 'github-copilot']
 
 function isDeviceFlowProvider(provider: string): provider is DeviceFlowProvider {
   return DEVICE_FLOW_PROVIDERS.includes(provider as DeviceFlowProvider)

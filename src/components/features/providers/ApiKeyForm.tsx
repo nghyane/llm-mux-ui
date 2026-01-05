@@ -2,37 +2,27 @@ import { useState } from 'react'
 import { Input } from '../../ui/Input'
 import { Button } from '../../ui/Button'
 import { Icon } from '../../ui/Icon'
-import type { GeminiKey, ClaudeKey, CodexKey, OpenAICompatibility } from '../../../api/types'
+import type { Provider, ProviderType } from '../../../api/types'
 
-type ApiKeyType = 'gemini' | 'claude' | 'codex' | 'openai-compatible'
+type ApiKeyType = ProviderType | 'openai-compatible'
 
 interface ApiKeyFormProps {
   type: ApiKeyType
-  existingKey?: GeminiKey | ClaudeKey | CodexKey | OpenAICompatibility
-  onSubmit: (data: GeminiKey | ClaudeKey | CodexKey | OpenAICompatibility) => void
+  existingProvider?: Provider
+  onSubmit: (data: Provider) => void
   onCancel: () => void
   isLoading?: boolean
 }
 
-export function ApiKeyForm({ type, existingKey, onSubmit, onCancel, isLoading }: ApiKeyFormProps) {
+export function ApiKeyForm({ type, existingProvider, onSubmit, onCancel, isLoading }: ApiKeyFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [formData, setFormData] = useState<Record<string, string>>(() => {
-    if (type === 'openai-compatible' && existingKey) {
-      const key = existingKey as OpenAICompatibility
+    if (existingProvider) {
       return {
-        name: key.name || '',
-        'base-url': key['base-url'] || '',
-        'api-key': key['api-key-entries']?.[0]?.['api-key'] || '',
-        'proxy-url': key['api-key-entries']?.[0]?.['proxy-url'] || '',
-      }
-    }
-
-    if (existingKey && 'api-key' in existingKey) {
-      return {
-        name: '',
-        'api-key': existingKey['api-key'] || '',
-        'base-url': existingKey['base-url'] || '',
-        'proxy-url': existingKey['proxy-url'] || '',
+        name: existingProvider.name || '',
+        'api-key': existingProvider['api-key'] || '',
+        'base-url': existingProvider['base-url'] || '',
+        'proxy-url': existingProvider['proxy-url'] || '',
       }
     }
 
@@ -45,15 +35,15 @@ export function ApiKeyForm({ type, existingKey, onSubmit, onCancel, isLoading }:
   })
 
   const [headers, setHeaders] = useState<Array<{ key: string; value: string }>>(() => {
-    if (existingKey && 'headers' in existingKey && existingKey.headers) {
-      return Object.entries(existingKey.headers).map(([key, value]) => ({ key, value }))
+    if (existingProvider && existingProvider.headers) {
+      return Object.entries(existingProvider.headers).map(([key, value]) => ({ key, value: value as string }))
     }
     return []
   })
 
   const [excludedModels, setExcludedModels] = useState<string>(() => {
-    if (existingKey && 'excluded-models' in existingKey && existingKey['excluded-models']) {
-      return existingKey['excluded-models'].join(', ')
+    if (existingProvider && existingProvider['excluded-models']) {
+      return existingProvider['excluded-models'].join(', ')
     }
     return ''
   })
@@ -67,11 +57,11 @@ export function ApiKeyForm({ type, existingKey, onSubmit, onCancel, isLoading }:
       return
     }
     
-    if (type === 'codex' && !key.startsWith('sk-')) {
+    if (type === 'openai' && !key.startsWith('sk-')) {
       setValidationWarning('OpenAI keys usually start with "sk-"')
       return
     }
-    if (type === 'claude' && !key.startsWith('sk-ant-')) {
+    if (type === 'anthropic' && !key.startsWith('sk-ant-')) {
       setValidationWarning('Anthropic keys usually start with "sk-ant-"')
       return
     }
@@ -126,49 +116,36 @@ export function ApiKeyForm({ type, existingKey, onSubmit, onCancel, isLoading }:
       .map((m) => m.trim())
       .filter((m) => m.length > 0)
 
-    if (type === 'openai-compatible') {
-      const data: OpenAICompatibility = {
-        name: formData.name,
-        'base-url': formData['base-url'],
-      }
+    // Map 'openai-compatible' to appropriate ProviderType
+    const providerType: ProviderType = type === 'openai-compatible' ? 'openai' : type
 
-      if (formData['api-key']) {
-        data['api-key-entries'] = [
-          {
-            'api-key': formData['api-key'],
-            ...(formData['proxy-url'] && { 'proxy-url': formData['proxy-url'] }),
-          },
-        ]
-      }
-
-      if (Object.keys(headersObj).length > 0) {
-        data.headers = headersObj
-      }
-
-      onSubmit(data)
-    } else {
-      const data: GeminiKey | ClaudeKey | CodexKey = {
-        'api-key': formData['api-key'],
-      }
-
-      if (formData['base-url']) {
-        data['base-url'] = formData['base-url']
-      }
-
-      if (formData['proxy-url']) {
-        data['proxy-url'] = formData['proxy-url']
-      }
-
-      if (Object.keys(headersObj).length > 0) {
-        data.headers = headersObj
-      }
-
-      if (excludedModelsArray.length > 0) {
-        data['excluded-models'] = excludedModelsArray
-      }
-
-      onSubmit(data)
+    const provider: Provider = {
+      type: providerType,
+      name: formData.name || `${providerType}-key`,
+      enabled: true,
     }
+
+    if (formData['api-key']) {
+      provider['api-key'] = formData['api-key']
+    }
+
+    if (formData['base-url']) {
+      provider['base-url'] = formData['base-url']
+    }
+
+    if (formData['proxy-url']) {
+      provider['proxy-url'] = formData['proxy-url']
+    }
+
+    if (Object.keys(headersObj).length > 0) {
+      provider.headers = headersObj
+    }
+
+    if (excludedModelsArray.length > 0) {
+      provider['excluded-models'] = excludedModelsArray
+    }
+
+    onSubmit(provider)
   }
 
   return (
@@ -252,7 +229,7 @@ export function ApiKeyForm({ type, existingKey, onSubmit, onCancel, isLoading }:
                 placeholder={
                   type === 'gemini'
                     ? 'https://generativelanguage.googleapis.com'
-                    : type === 'claude'
+                    : type === 'anthropic'
                       ? 'https://api.anthropic.com'
                       : 'https://api.openai.com'
                 }
@@ -292,7 +269,7 @@ export function ApiKeyForm({ type, existingKey, onSubmit, onCancel, isLoading }:
             {headers.length > 0 && (
               <div className="space-y-2">
                 {headers.map((header, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={`header-${header.key || index}`} className="flex items-center gap-2">
                     <Input
                       placeholder="Header name"
                       value={header.key}
@@ -353,7 +330,7 @@ export function ApiKeyForm({ type, existingKey, onSubmit, onCancel, isLoading }:
           ) : (
             <>
               <Icon name="save" size="sm" />
-              {existingKey ? 'Update' : 'Add'} Key
+              {existingProvider ? 'Update' : 'Add'} Key
             </>
           )}
         </Button>

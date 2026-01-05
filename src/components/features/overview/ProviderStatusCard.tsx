@@ -1,9 +1,11 @@
 import { Badge } from '../../ui/Badge'
 import { Icon } from '../../ui/Icon'
 import type { AuthFile } from '../../../api/types'
+import type { ProviderWithUsage } from './useDashboardStats'
+import { formatNumber } from '../../../lib/utils'
 
 export interface ProviderStatusCardProps {
-  provider: AuthFile
+  provider: ProviderWithUsage
   onRefresh?: () => void
 }
 
@@ -96,6 +98,7 @@ export function ProviderStatusCard({ provider, onRefresh }: ProviderStatusCardPr
           </Badge>
           {onRefresh && !provider.disabled && (
             <button
+              type="button"
               onClick={onRefresh}
               className="p-1 opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-(--bg-hover) text-(--text-secondary) hover:text-(--text-primary)"
               title="Refresh provider"
@@ -108,6 +111,18 @@ export function ProviderStatusCard({ provider, onRefresh }: ProviderStatusCardPr
 
       {/* Additional info */}
       <div className="mt-2 flex items-center gap-4 text-xs text-(--text-tertiary) ml-12">
+        {provider.usage && (
+          <>
+            <span className="flex items-center gap-1">
+              <Icon name="data_usage" size="sm" />
+              {formatNumber(provider.usage.requests)} req
+            </span>
+            <span className="flex items-center gap-1">
+              <Icon name="token" size="sm" />
+              {formatNumber(provider.usage.tokens)}
+            </span>
+          </>
+        )}
         {provider.last_refresh && (
           <span className="flex items-center gap-1">
             <Icon name="schedule" size="sm" />

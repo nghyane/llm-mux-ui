@@ -43,6 +43,18 @@ a, button {
   .text-tertiary {
     color: var(--text-tertiary);
   }
+  .bg-page {
+    background-color: var(--bg-page);
+  }
+  .bg-container {
+    background-color: var(--bg-container);
+  }
+  .bg-nested {
+    background-color: var(--bg-nested);
+  }
+  .bg-interactive {
+    background-color: var(--bg-interactive);
+  }
   .bg-body {
     background-color: var(--bg-body);
   }
@@ -58,4 +70,77 @@ a, button {
   .border-default {
     border-color: var(--border-color);
   }
+  .surface-0 {
+    background-color: var(--surface-0);
+  }
+  .surface-1 {
+    background-color: var(--surface-1);
+    box-shadow: var(--shadow-surface-1);
+  }
+  .surface-2 {
+    background-color: var(--surface-2);
+    box-shadow: var(--shadow-surface-2);
+  }
+  .surface-3 {
+    background-color: var(--surface-3);
+    box-shadow: var(--shadow-surface-3);
+  }
+}
+
+/* Tremor/Recharts - fix SVG text colors for dark mode */
+[class*="tremor"] text,
+[class*="tremor"] tspan,
+[class*="recharts"] text,
+[class*="recharts"] tspan,
+.recharts-cartesian-axis-tick-value,
+.recharts-legend-item-text,
+.recharts-text {
+  fill: var(--text-secondary) !important;
+}
+
+[class*="tremor-Tooltip"],
+[class*="recharts-tooltip"] {
+  background-color: var(--surface-2) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Tremor chart colors - override for dark mode visibility */
+.dark [class*="tremor"] .bg-indigo-500,
+.dark [class*="tremor"] [class*="fill-indigo"] {
+  background-color: #818cf8 !important;
+  fill: #818cf8 !important;
+}
+
+.dark [class*="tremor"] .bg-blue-500,
+.dark [class*="tremor"] [class*="fill-blue"] {
+  background-color: #60a5fa !important;
+  fill: #60a5fa !important;
+}
+
+.dark [class*="tremor"] .bg-cyan-500,
+.dark [class*="tremor"] [class*="fill-cyan"] {
+  background-color: #22d3ee !important;
+  fill: #22d3ee !important;
+}
+
+.dark [class*="tremor"] .bg-violet-500,
+.dark [class*="tremor"] [class*="fill-violet"] {
+  background-color: #a78bfa !important;
+  fill: #a78bfa !important;
+}
+
+.dark [class*="tremor"] .bg-fuchsia-500,
+.dark [class*="tremor"] [class*="fill-fuchsia"] {
+  background-color: #e879f9 !important;
+  fill: #e879f9 !important;
+}
+
+/* Tremor grid lines for dark mode */
+.dark [class*="tremor"] .stroke-tremor-border {
+  stroke: var(--border-color) !important;
+}
+
+.dark [class*="tremor"] [class*="stroke-gray"] {
+  stroke: var(--border-color) !important;
 }

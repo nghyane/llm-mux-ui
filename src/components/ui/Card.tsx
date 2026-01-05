@@ -3,17 +3,21 @@ import { cn } from '../../lib/cn'
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   hover?: boolean
+  elevation?: 0 | 1 | 2 | 3
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, hover = true, children, ...props }, ref) => {
+  ({ className, hover = true, elevation = 1, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
-          'bg-(--bg-card) border border-(--border-color) rounded-xl',
-          'shadow-sm',
-          hover && 'hover:border-(--text-secondary)/40 transition-colors',
+          'border border-(--border-color) rounded-xl',
+          elevation === 0 && 'bg-(--bg-page)',
+          elevation === 1 && 'bg-(--bg-container) shadow-sm',
+          elevation === 2 && 'bg-(--bg-container) shadow-md',
+          elevation === 3 && 'bg-(--bg-container) shadow-lg',
+          hover && 'hover:border-(--border-hover) transition-all',
           className
         )}
         {...props}
